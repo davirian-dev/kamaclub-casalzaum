@@ -92,6 +92,7 @@ export const GameView: React.FC<GameViewProps> = ({
   const [selectedLevel, setSelectedLevel] = useState<number | 'todos'>('todos');
   const [isSpinningTurn, setIsSpinningTurn] = useState(false);
   const [chosenType, setChosenType] = useState<'verdade' | 'desafio' | null>(null);
+  const [isRevealPending, setIsRevealPending] = useState(false);
   const [isSafePauseActive, setIsSafePauseActive] = useState(false);
 
   // Calcula o nível incremental automático baseado na rodada atual
@@ -123,6 +124,7 @@ export const GameView: React.FC<GameViewProps> = ({
     if (participants.length < 2 || isSpinningTurn) return;
     setIsSpinningTurn(true);
     setChosenType(null); // Reseta a escolha para escolher Verdade ou Desafio
+    setIsRevealPending(false);
 
     let counter = 0;
     const interval = setInterval(() => {
@@ -228,6 +230,7 @@ export const GameView: React.FC<GameViewProps> = ({
     });
     onAddScore(currentChallenge.points);
     setChosenType(null);
+    setIsRevealPending(false);
     setRoundNumber((r) => r + 1);
     setCurrentIdx((prev) => prev + 1);
   };
@@ -235,6 +238,7 @@ export const GameView: React.FC<GameViewProps> = ({
   // Recusa / Beber / Pagar Prenda
   const handleRefusal = () => {
     setChosenType(null);
+    setIsRevealPending(false);
     setRoundNumber((r) => r + 1);
     setCurrentIdx((prev) => prev + 1);
   };
@@ -281,6 +285,7 @@ export const GameView: React.FC<GameViewProps> = ({
   // Pular desafio sem pontuar
   const handleSkip = () => {
     setChosenType(null);
+    setIsRevealPending(false);
     setRoundNumber((r) => r + 1);
     setCurrentIdx((prev) => prev + 1);
   };
@@ -291,7 +296,7 @@ export const GameView: React.FC<GameViewProps> = ({
       <div className="space-y-4 pb-20">
         <div className="card-pergaminho p-6 border-2 border-[#D4AF37]/60 text-center space-y-4">
           <div className="w-16 h-16 mx-auto rounded-full bg-[#8A0E26]/20 border border-[#D4AF37] flex items-center justify-center text-3xl">
-            🎭
+            😇🔥
           </div>
           <h2 className="font-cinzel text-lg font-bold text-[#2E0B12]">
             QUEM VAI JOGAR HOJE?
@@ -328,8 +333,8 @@ export const GameView: React.FC<GameViewProps> = ({
               : 'text-[#F6EAD2]/70 hover:text-white'
           }`}
         >
-          <span className="text-sm">🎭</span>
-          <span className="text-[9px] font-cinzel tracking-tight">Verdade / Desafio</span>
+          <span className="text-sm leading-none">😇🔥</span>
+          <span className="text-[9px] font-cinzel tracking-tight">V ou D</span>
         </button>
 
         <button
@@ -461,33 +466,48 @@ export const GameView: React.FC<GameViewProps> = ({
             </div>
 
           {/* Escolha do Jogador: Verdade ou Desafio? */}
+          {!chosenType && (
           <div className="card-pergaminho p-3 border border-[#D4AF37]/50 text-center space-y-2">
             <span className="text-[11px] font-cinzel font-bold text-[#8A0E26] block">
               {activeTarget ? activeTarget.name : 'Jogador'}, VOCÊ ESCOLHE:
             </span>
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => { setChosenType('verdade'); setCurrentIdx((prev) => prev + 1); }}
-                className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
-                  chosenType === 'verdade'
-                    ? 'bg-[#184824] text-white border-emerald-400 shadow-md scale-102'
-                    : 'bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50'
-                }`}
+                onClick={() => { setChosenType('verdade'); setIsRevealPending(true); }}
+                className="py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50"
               >
                 😇 VERDADE
               </button>
               <button
-                onClick={() => { setChosenType('desafio'); setCurrentIdx((prev) => prev + 1); }}
-                className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
-                  chosenType === 'desafio'
-                    ? 'bg-[#8A0E26] text-white border-rose-400 shadow-md scale-102'
-                    : 'bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50'
-                }`}
+                onClick={() => { setChosenType('desafio'); setIsRevealPending(true); }}
+                className="py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50"
               >
                 🔥 DESAFIO
               </button>
             </div>
           </div>
+          )}
+
+          {/* Tela de Suspense: aguardando revelação */}
+          {chosenType && isRevealPending && (
+          <div className="card-pergaminho p-8 border-2 border-[#D4AF37] text-center space-y-5">
+            <div className="text-6xl animate-bounce">
+              {chosenType === 'verdade' ? '😇' : '🔥'}
+            </div>
+            <h2 className="font-cinzel text-xl font-bold text-[#2E0B12] uppercase">
+              {chosenType === 'verdade' ? 'VERDADE!' : 'DESAFIO!'}
+            </h2>
+            <p className="text-sm text-[#5C2B1D] font-serif">
+              {activeTarget?.name ?? 'Jogador'}, prepare-se...
+            </p>
+            <button
+              onClick={() => { setIsRevealPending(false); setCurrentIdx((prev) => prev + 1); }}
+              className="w-full py-4 bg-gradient-to-r from-[#8A0E26] via-[#B5173B] to-[#8A0E26] text-white font-cinzel font-bold text-sm rounded-xl shadow-xl hover:brightness-110 active:scale-95 transition border border-[#D4AF37]/50"
+            >
+              🃏 REVELAR {chosenType === 'verdade' ? 'VERDADE' : 'DESAFIO'}
+            </button>
+          </div>
+          )}
 
           {/* Seletor de Nível */}
           <div className="bg-[#1C0307] p-2 rounded-xl border border-[#D4AF37]/30 flex items-center justify-between gap-1 text-[11px] font-cinzel">
@@ -537,6 +557,7 @@ export const GameView: React.FC<GameViewProps> = ({
             </div>
 
           {/* Card Pergaminho do Desafio / Eu Nunca */}
+          {!isRevealPending && (
           <div className="card-pergaminho p-5 border-2 border-[#D4AF37]/60 text-center relative overflow-hidden">
             {/* Selo do Nível */}
             <div className="inline-block bg-gradient-to-r from-[#8A0E26] to-[#B5173B] text-white font-cinzel text-[10px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm mb-3">
@@ -547,6 +568,8 @@ export const GameView: React.FC<GameViewProps> = ({
             <div className="w-24 h-24 mx-auto my-2 rounded-full border-2 border-[#D4AF37]/70 overflow-hidden shadow-lg bg-[#180206] flex items-center justify-center relative">
               {gameMode === 'amigos' ? (
                 <div className="text-3xl">🥂</div>
+              ) : chosenType ? (
+                <div className="text-4xl">{chosenType === 'verdade' ? '😇' : '🔥'}</div>
               ) : (
                 <img
                   src="/assets/card-silhouette-gold.webp"
@@ -681,6 +704,7 @@ export const GameView: React.FC<GameViewProps> = ({
               </div>
             </div>
           </div>
+          )}
         </>
       )}
     </div>
