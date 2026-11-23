@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Challenge, Participant, GameMode } from '../types';
-import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2, SkipForward } from 'lucide-react';
+import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2, SkipForward, ArrowDown, ShieldAlert, HeartHandshake, Dices } from 'lucide-react';
+import { audioPlayer } from '../utils/audio';
+import { DadosClimaView } from './DadosClimaView';
 import confetti from 'canvas-confetti';
 
 // Helper: retorna pronomes e artigos com base no gênero do participante
@@ -83,13 +85,14 @@ export const GameView: React.FC<GameViewProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [activeAuthor, setActiveAuthor] = useState<Participant | null>(null);
   const [activeTarget, setActiveTarget] = useState<Participant | null>(null);
-  const [selectedSubGame, setSelectedSubGame] = useState<'verdade_desafio' | 'garrafa' | 'eu_nunca'>('verdade_desafio');
+  const [selectedSubGame, setSelectedSubGame] = useState<'verdade_desafio' | 'garrafa' | 'eu_nunca' | 'dados_clima'>('verdade_desafio');
   const [roundNumber, setRoundNumber] = useState(1);
   const [bottleAngle, setBottleAngle] = useState(0);
   const [isSpinningBottle, setIsSpinningBottle] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<number | 'todos'>('todos');
   const [isSpinningTurn, setIsSpinningTurn] = useState(false);
   const [chosenType, setChosenType] = useState<'verdade' | 'desafio' | null>(null);
+  const [isSafePauseActive, setIsSafePauseActive] = useState(false);
   const [bottleResult, setBottleResult] = useState<{
     author: Participant;
     target: Participant;
@@ -209,7 +212,8 @@ export const GameView: React.FC<GameViewProps> = ({
       }, 1000);
     } else if (timerLeft === 0) {
       setIsTimerRunning(false);
-      // Vibração leve ao terminar o tempo (se suportado pelo celular)
+      // Alerta sonoro e vibração ao terminar o tempo da carta
+      audioPlayer.playTimerChime();
       if ('vibrate' in navigator) {
         navigator.vibrate([200, 100, 200]);
       }
@@ -248,6 +252,35 @@ export const GameView: React.FC<GameViewProps> = ({
     } else {
       alert('Você precisa de 20 pontos para usar um coringa e trocar de carta!');
     }
+  };
+
+  // Carta Resgate / Inverter Papéis
+  const handleRescueCard = () => {
+    if (!activeAuthor || !activeTarget) return;
+    const temp = activeAuthor;
+    setActiveAuthor(activeTarget);
+    setActiveTarget(temp);
+    confetti({
+      particleCount: 30,
+      spread: 40,
+      origin: { y: 0.6 },
+      colors: ['#D4AF37', '#FFDF78']
+    });
+  };
+
+  // Esfriar / Voltar 1 nível imediatamente
+  const handleCoolDown = () => {
+    setSelectedLevel((prev) => {
+      if (prev === 3) return 2;
+      if (prev === 2) return 1;
+      return 1;
+    });
+    setCurrentIdx((prev) => prev + 1);
+  };
+
+  // Saída Respeitosa / Safe Word / Limite
+  const handleSafeExit = () => {
+    setIsSafePauseActive(true);
   };
 
   // Pular desafio sem pontuar
@@ -334,42 +367,54 @@ export const GameView: React.FC<GameViewProps> = ({
 
   return (
     <div className="space-y-4 pb-20">
-      {/* Seletor Rápido de Jogos */}
-      <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#1A0206] border border-[#D4AF37]/40 rounded-2xl">
+      {/* Seletor Rápido de Jogos (4 Abas) */}
+      <div className="grid grid-cols-4 gap-1 p-1 bg-[#1A0206] border border-[#D4AF37]/40 rounded-2xl text-center">
         <button
           onClick={() => { setSelectedSubGame('verdade_desafio'); setChosenType(null); }}
-          className={`py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
+          className={`py-2 px-1 rounded-xl transition flex flex-col items-center justify-center ${
             selectedSubGame === 'verdade_desafio'
               ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
               : 'text-[#F6EAD2]/70 hover:text-white'
           }`}
         >
           <span className="text-sm">🎭</span>
-          <span className="text-[10px] font-cinzel tracking-tight">Verdade / Desafio</span>
+          <span className="text-[9px] font-cinzel tracking-tight">Verdade / Desafio</span>
         </button>
 
         <button
           onClick={() => { setSelectedSubGame('garrafa'); }}
-          className={`py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
+          className={`py-2 px-1 rounded-xl transition flex flex-col items-center justify-center ${
             selectedSubGame === 'garrafa'
               ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
               : 'text-[#F6EAD2]/70 hover:text-white'
           }`}
         >
           <span className="text-sm">🍾</span>
-          <span className="text-[10px] font-cinzel tracking-tight">Jogo da Garrafa</span>
+          <span className="text-[9px] font-cinzel tracking-tight">Garrafa</span>
         </button>
 
         <button
           onClick={() => { setSelectedSubGame('eu_nunca'); }}
-          className={`py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
+          className={`py-2 px-1 rounded-xl transition flex flex-col items-center justify-center ${
             selectedSubGame === 'eu_nunca'
               ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
               : 'text-[#F6EAD2]/70 hover:text-white'
           }`}
         >
           <span className="text-sm">🤫</span>
-          <span className="text-[10px] font-cinzel tracking-tight">Eu Nunca</span>
+          <span className="text-[9px] font-cinzel tracking-tight">Eu Nunca</span>
+        </button>
+
+        <button
+          onClick={() => { setSelectedSubGame('dados_clima'); }}
+          className={`py-2 px-1 rounded-xl transition flex flex-col items-center justify-center ${
+            selectedSubGame === 'dados_clima'
+              ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
+              : 'text-[#F6EAD2]/70 hover:text-white'
+          }`}
+        >
+          <span className="text-sm">🎲</span>
+          <span className="text-[9px] font-cinzel tracking-tight">Dados Clima</span>
         </button>
       </div>
 
@@ -390,340 +435,393 @@ export const GameView: React.FC<GameViewProps> = ({
         )}
       </div>
 
-      {/* Banner de Sorteio de Vez / Roleta de Nomes */}
-      <div className="bg-[#1F0307]/95 border-2 border-[#D4AF37]/50 rounded-2xl p-3 shadow-lg space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base">🎲</span>
-            <span className="font-cinzel text-xs font-bold text-[#FFDF78] tracking-wider">
-              SORTEIO DE NOMES DA RODADA
-            </span>
-          </div>
-          <button
-            onClick={spinTurn}
-            disabled={isSpinningTurn}
-            className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-[11px] rounded-lg shadow hover:brightness-110 active:scale-95 transition disabled:opacity-50 flex items-center gap-1"
-          >
-            <RefreshCw className={`w-3 h-3 ${isSpinningTurn ? 'animate-spin' : ''}`} />
-            {isSpinningTurn ? 'Sorteando...' : 'Girar Nomes'}
-          </button>
-        </div>
+      {/* Renderização Condicional do Sub-Jogo Selecionado */}
 
-        <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="bg-[#120104] p-2 rounded-xl border border-[#D4AF37]/30">
-            <span className="text-[10px] text-[#D4AF37]/80 block font-cinzel font-bold">
-              QUEM PERGUNTA / FAZ:
-            </span>
-            <span className={`font-cinzel text-sm font-bold block mt-0.5 ${isSpinningTurn ? 'text-amber-400 animate-pulse' : 'text-[#FFDF78]'}`}>
-              {activeAuthor ? activeAuthor.name : '—'}
-            </span>
+      {/* CASO 1: DADOS DO CLIMA */}
+      {selectedSubGame === 'dados_clima' && (
+        <DadosClimaView
+          gameMode={gameMode}
+          participants={participants}
+          onAddScore={onAddScore}
+        />
+      )}
+
+      {/* CASO 2: JOGO DA GARRAFA */}
+      {selectedSubGame === 'garrafa' && (
+        <div className="card-pergaminho p-4 border border-[#D4AF37]/50 text-center">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🍾</span>
+              <h3 className="font-cinzel font-bold text-sm text-[#2E0B12]">
+                JOGO DA GARRAFA ({gameMode.toUpperCase()})
+              </h3>
+            </div>
+            <span className="text-[10px] text-[#6E3C2B]">Física Real de Giro</span>
           </div>
 
-          <div className="bg-[#120104] p-2 rounded-xl border border-[#D4AF37]/30">
-            <span className="text-[10px] text-[#D4AF37]/80 block font-cinzel font-bold">
-              QUEM RESPONDE / RECEBE:
-            </span>
-            <span className={`font-cinzel text-sm font-bold block mt-0.5 ${isSpinningTurn ? 'text-amber-400 animate-pulse' : 'text-[#FFDF78]'}`}>
-              {activeTarget ? activeTarget.name : '—'}
-            </span>
+          {/* Área da Garrafa Giratória */}
+          <div className="relative w-44 h-44 mx-auto my-3 flex items-center justify-center">
+            {/* Rosa dos Ventos de Fundo */}
+            <div className="absolute inset-0 rounded-full border border-dashed border-[#D4AF37]/40 flex items-center justify-center">
+              <div className="w-full h-px bg-[#D4AF37]/20 absolute" />
+              <div className="h-full w-px bg-[#D4AF37]/20 absolute" />
+            </div>
+
+            {/* A Garrafa Dourada */}
+            <div
+              onClick={handleSpinBottle}
+              style={{
+                transform: `rotate(${bottleAngle}deg)`,
+                transition: isSpinningBottle ? 'transform 2.5s cubic-bezier(0.15, 0.9, 0.25, 1)' : 'none'
+              }}
+              className="w-12 h-36 cursor-pointer flex flex-col items-center justify-center z-10 filter drop-shadow-lg"
+            >
+              <div className="w-3 h-8 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 rounded-t-sm border border-amber-200" />
+              <div className="w-10 h-28 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-700 rounded-b-xl border border-amber-300 shadow-inner flex items-center justify-center">
+                <span className="text-[9px] font-cinzel font-bold text-black rotate-90">KAMA</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Escolha do Jogador: Verdade ou Desafio? */}
-      <div className="card-pergaminho p-3 border border-[#D4AF37]/50 text-center space-y-2">
-        <span className="text-[11px] font-cinzel font-bold text-[#8A0E26] block">
-          {activeTarget ? activeTarget.name : 'Jogador'}, VOCÊ ESCOLHE:
-        </span>
-        <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => { setChosenType('verdade'); setCurrentIdx((prev) => prev + 1); }}
-            className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
-              chosenType === 'verdade'
-                ? 'bg-[#184824] text-white border-emerald-400 shadow-md scale-102'
-                : 'bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50'
-            }`}
+            onClick={handleSpinBottle}
+            disabled={isSpinningBottle}
+            className="px-6 py-2.5 bg-gradient-to-r from-[#8A0E26] via-[#B5173B] to-[#8A0E26] text-white font-cinzel font-bold text-xs rounded-full shadow-lg hover:brightness-110 active:scale-95 transition disabled:opacity-50 border border-[#D4AF37]/50"
           >
-            😇 VERDADE
+            {isSpinningBottle ? 'Girando a Garrafa...' : '🍾 Toque para Girar a Garrafa'}
           </button>
-          <button
-            onClick={() => { setChosenType('desafio'); setCurrentIdx((prev) => prev + 1); }}
-            className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
-              chosenType === 'desafio'
-                ? 'bg-[#8A0E26] text-white border-rose-400 shadow-md scale-102'
-                : 'bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50'
-            }`}
-          >
-            🔥 DESAFIO
-          </button>
-        </div>
-      </div>
 
-      {/* Seletor de Nível do Verdade ou Desafio */}
-      <div className="bg-[#1C0307] p-2 rounded-xl border border-[#D4AF37]/30 flex items-center justify-between gap-1 text-[11px] font-cinzel">
-        <span className="text-[#D4AF37] font-bold text-[10px] px-1">NÍVEL:</span>
-        <div className="flex gap-1 flex-1 justify-end">
-          <button
-            onClick={() => { setSelectedLevel('todos'); setCurrentIdx(0); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
-              selectedLevel === 'todos'
-                ? 'bg-[#D4AF37] text-black shadow'
-                : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
-            }`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => { setSelectedLevel(1); setCurrentIdx(0); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
-              selectedLevel === 1
-                ? 'bg-[#8A0E26] text-white shadow border border-[#D4AF37]/50'
-                : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
-            }`}
-          >
-            Nível 1 (Leve)
-          </button>
-          <button
-            onClick={() => { setSelectedLevel(2); setCurrentIdx(0); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
-              selectedLevel === 2
-                ? 'bg-[#8A0E26] text-white shadow border border-[#D4AF37]/50'
-                : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
-            }`}
-          >
-            Nível 2 (Médio)
-          </button>
-          <button
-            onClick={() => { setSelectedLevel(3); setCurrentIdx(0); }}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
-              selectedLevel === 3
-                ? 'bg-[#8A0E26] text-white shadow border border-[#D4AF37]/50'
-                : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
-            }`}
-          >
-            Nível 3 (Picante)
-          </button>
-        </div>
-      </div>
+          {/* Card de Resultado da Garrafa com Ação Real */}
+          {bottleResult && (
+            <div className="mt-4 p-4 bg-[#F5E8CE] border-2 border-[#D4AF37] rounded-xl text-left space-y-2.5 animate-fadeIn shadow-md">
+              <div className="flex items-center justify-between border-b border-[#D4AF37]/40 pb-1.5">
+                <span className="font-cinzel text-xs font-bold text-[#8A0E26] flex items-center gap-1">
+                  🎯 RESULTADO DO GIRO:
+                </span>
+                <span className="text-[10px] bg-[#8A0E26] text-white px-2 py-0.5 rounded-full font-bold">
+                  +{bottleResult.challenge.points} pts
+                </span>
+              </div>
 
-      {/* Card Pergaminho do Desafio Atual */}
-      <div className="card-pergaminho p-5 border-2 border-[#D4AF37]/60 text-center relative overflow-hidden">
-        {/* Selo do Nível */}
-        <div className="inline-block bg-gradient-to-r from-[#8A0E26] to-[#B5173B] text-white font-cinzel text-[10px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm mb-3">
-          {currentChallenge.type.replace('_', ' ')} • Nível {currentChallenge.level} ({gameMode})
-        </div>
+              <div className="text-xs text-[#2E0B12] font-sans space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-[#8A0E26]">Fundo da Garrafa (Quem Faz):</span>
+                  <strong className="text-[#2E0B12] bg-[#EEDBB7] px-2 py-0.5 rounded font-cinzel">
+                    {bottleResult.author.name}
+                  </strong>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-[#D4AF37]">Gargalo (Quem Recebe):</span>
+                  <strong className="text-[#2E0B12] bg-[#EEDBB7] px-2 py-0.5 rounded font-cinzel">
+                    {bottleResult.target.name}
+                  </strong>
+                </div>
+              </div>
 
-        {/* Ilustração ou Ícone da Carta */}
-        <div className="w-24 h-24 mx-auto my-2 rounded-full border-2 border-[#D4AF37]/70 overflow-hidden shadow-lg bg-[#180206] flex items-center justify-center relative">
-          {gameMode === 'amigos' ? (
-            <div className="text-3xl">🥂</div>
-          ) : (
-            <img
-              src="/assets/card-silhouette-gold.webp"
-              alt="Silhueta Íntima"
-              className="w-full h-full object-cover transition duration-300 hover:scale-105"
-            />
+              <div className="bg-[#FAF4E6] p-3 rounded-lg border border-[#D4AF37]/30 my-2">
+                <span className="text-[10px] uppercase font-cinzel font-bold text-[#8A0E26] block mb-1">
+                  DESAFIO DA GARRAFA:
+                </span>
+                <p className="font-serif text-sm text-[#2E0B12] leading-relaxed italic font-medium">
+                  {injectNames(bottleResult.challenge.text, bottleResult.author, bottleResult.target)}
+                </p>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => {
+                    onAddScore(bottleResult.challenge.points);
+                    setBottleResult(null);
+                    confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+                  }}
+                  className="flex-1 py-2 bg-gradient-to-r from-[#D4AF37] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-xs rounded-lg shadow transition hover:brightness-110 flex items-center justify-center gap-1"
+                >
+                  <CheckCircle className="w-3.5 h-3.5" /> Cumpriram (+{bottleResult.challenge.points} pts)
+                </button>
+                <button
+                  onClick={() => setBottleResult(null)}
+                  className="px-3 py-2 bg-[#3D120B] text-[#F6EAD2] font-sans text-xs rounded-lg transition hover:bg-[#52190F]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
           )}
         </div>
+      )}
 
-        {/* Texto do Desafio com Nomes Injetados e Pronomes Adaptativos */}
-        <p className="font-serif text-base sm:text-lg text-[#2E0B12] leading-relaxed my-3 font-medium px-2">
-          {injectNames(currentChallenge.text, activeAuthor, activeTarget)}
-        </p>
-
-        {/* Cronômetro (se houver) */}
-        {timerLeft !== null && (
-          <div className="my-3 flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2 bg-[#F3E5CA] px-4 py-1.5 rounded-full border border-[#D4AF37]/50 text-[#3D120B]">
-              <span className="font-mono font-bold text-sm">
-                00:{timerLeft < 10 ? `0${timerLeft}` : timerLeft}
-              </span>
-              <button
-                aria-label={isTimerRunning ? 'Pausar cronômetro' : 'Iniciar cronômetro'}
-                title={isTimerRunning ? 'Pausar' : 'Iniciar'}
-                onClick={() => setIsTimerRunning(!isTimerRunning)}
-                className="p-1 rounded-full bg-[#8A0E26] text-white hover:bg-[#A31230] transition"
-              >
-                {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                aria-label="Reiniciar cronômetro"
-                title="Reiniciar"
-                onClick={() => {
-                  setIsTimerRunning(false);
-                  setTimerLeft(currentChallenge.timeSeconds || 15);
-                }}
-                className="p-1 rounded-full bg-[#3D120B] text-white hover:bg-black transition"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <span className="text-[10px] text-[#6E3C2B] mt-1 font-sans">
-              Timer na carta • Cronometre a ação!
-            </span>
-          </div>
-        )}
-
-        {/* Botão de Conclusão e Ações de Jogo */}
-        <div className="space-y-2 mt-4">
-          <button
-            onClick={handleComplete}
-            className="w-full py-3 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] hover:brightness-110 active:scale-[0.98] text-[#1F0307] font-cinzel font-bold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 border border-[#FFDF78]/50"
-          >
-            <CheckCircle className="w-4 h-4 text-[#8A0E26]" />
-            CUMPRI O DESAFIO (+{currentChallenge.points} pts)
-          </button>
-
-          {/* Opções de Recusa / Beber / Pagar Prenda / Pular */}
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={handleRefusal}
-              className="py-2.5 px-1 bg-[#3D120B] hover:bg-[#52190F] active:scale-[0.97] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#D4AF37]/30"
-              title="Beber 1 gole (ou água/suco)"
-            >
-              <span className="flex items-center gap-1">
-                <Beer className="w-3.5 h-3.5 text-amber-400" />
-                BEBER
-              </span>
-              <span className="text-[8px] opacity-70 font-normal">1 gole / suco</span>
-            </button>
-
-            <button
-              onClick={handleRefusal}
-              className="py-2.5 px-1 bg-[#751124] hover:bg-[#8F162D] active:scale-[0.97] text-white font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#FFDF78]/30"
-              title="Pagar prenda combinada"
-            >
-              <span className="flex items-center gap-1">
-                <Wine className="w-3.5 h-3.5 text-yellow-300" />
-                PRENDA
-              </span>
-              <span className="text-[8px] opacity-70 font-normal">pagar prenda</span>
-            </button>
-
-            <button
-              onClick={handleSkip}
-              className="py-2.5 px-1 bg-[#241316] hover:bg-[#381B20] active:scale-[0.97] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#D4AF37]/30"
-              title="Pular esta carta e passar a vez"
-            >
-              <span className="flex items-center gap-1">
-                <SkipForward className="w-3.5 h-3.5 text-slate-300" />
-                PULAR
-              </span>
-              <span className="text-[8px] opacity-70 font-normal">passar a vez</span>
-            </button>
-          </div>
-
-          {/* Trocar com Coringa */}
-          <button
-            onClick={handleCoringa}
-            className="w-full py-2 bg-[#F3E5CA]/80 hover:bg-[#F3E5CA] border border-[#D4AF37]/50 rounded-xl text-[11px] text-[#5C2B1D] hover:text-[#8A0E26] font-semibold flex items-center justify-center gap-1.5 transition active:scale-[0.98] mt-1"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-[#8A0E26]" /> Trocar Carta com Coringa (Gasta 20 pts • {coringas} disponíveis)
-          </button>
-        </div>
-      </div>
-
-      {/* Módulo Especial: Jogo da Garrafa Interativo */}
-      <div className="card-pergaminho p-4 border border-[#D4AF37]/50 text-center">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🍾</span>
-            <h3 className="font-cinzel font-bold text-sm text-[#2E0B12]">
-              JOGO DA GARRAFA ({gameMode.toUpperCase()})
-            </h3>
-          </div>
-          <span className="text-[10px] text-[#6E3C2B]">Física Real de Giro</span>
-        </div>
-
-        {/* Área da Garrafa Giratória */}
-        <div className="relative w-44 h-44 mx-auto my-3 flex items-center justify-center">
-          {/* Rosa dos Ventos de Fundo */}
-          <div className="absolute inset-0 rounded-full border border-dashed border-[#D4AF37]/40 flex items-center justify-center">
-            <div className="w-full h-px bg-[#D4AF37]/20 absolute" />
-            <div className="h-full w-px bg-[#D4AF37]/20 absolute" />
-          </div>
-
-          {/* A Garrafa Dourada */}
-          <div
-            onClick={handleSpinBottle}
-            style={{
-              transform: `rotate(${bottleAngle}deg)`,
-              transition: isSpinningBottle ? 'transform 2.5s cubic-bezier(0.15, 0.9, 0.25, 1)' : 'none'
-            }}
-            className="w-12 h-36 cursor-pointer flex flex-col items-center justify-center z-10 filter drop-shadow-lg"
-          >
-            <div className="w-3 h-8 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 rounded-t-sm border border-amber-200" />
-            <div className="w-10 h-28 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-700 rounded-b-xl border border-amber-300 shadow-inner flex items-center justify-center">
-              <span className="text-[9px] font-cinzel font-bold text-black rotate-90">KAMA</span>
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={handleSpinBottle}
-          disabled={isSpinningBottle}
-          className="px-6 py-2.5 bg-gradient-to-r from-[#8A0E26] via-[#B5173B] to-[#8A0E26] text-white font-cinzel font-bold text-xs rounded-full shadow-lg hover:brightness-110 active:scale-95 transition disabled:opacity-50 border border-[#D4AF37]/50"
-        >
-          {isSpinningBottle ? 'Girando a Garrafa...' : '🍾 Toque para Girar a Garrafa'}
-        </button>
-
-        {/* Card de Resultado da Garrafa com Ação Real */}
-        {bottleResult && (
-          <div className="mt-4 p-4 bg-[#F5E8CE] border-2 border-[#D4AF37] rounded-xl text-left space-y-2.5 animate-fadeIn shadow-md">
-            <div className="flex items-center justify-between border-b border-[#D4AF37]/40 pb-1.5">
-              <span className="font-cinzel text-xs font-bold text-[#8A0E26] flex items-center gap-1">
-                🎯 RESULTADO DO GIRO:
-              </span>
-              <span className="text-[10px] bg-[#8A0E26] text-white px-2 py-0.5 rounded-full font-bold">
-                +{bottleResult.challenge.points} pts
-              </span>
-            </div>
-
-            <div className="text-xs text-[#2E0B12] font-sans space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-[#8A0E26]">Fundo da Garrafa (Quem Faz):</span>
-                <strong className="text-[#2E0B12] bg-[#EEDBB7] px-2 py-0.5 rounded font-cinzel">
-                  {bottleResult.author.name}
-                </strong>
+      {/* CASO 3: VERDADE OU DESAFIO / EU NUNCA */}
+      {(selectedSubGame === 'verdade_desafio' || selectedSubGame === 'eu_nunca') && (
+        <>
+          {/* Banner de Sorteio de Vez / Roleta de Nomes (somente no Verdade ou Desafio) */}
+          {selectedSubGame === 'verdade_desafio' && (
+            <div className="bg-[#1F0307]/95 border-2 border-[#D4AF37]/50 rounded-2xl p-3 shadow-lg space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">🎲</span>
+                  <span className="font-cinzel text-xs font-bold text-[#FFDF78] tracking-wider">
+                    SORTEIO DE NOMES DA RODADA
+                  </span>
+                </div>
+                <button
+                  onClick={spinTurn}
+                  disabled={isSpinningTurn}
+                  className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-[11px] rounded-lg shadow hover:brightness-110 active:scale-95 transition disabled:opacity-50 flex items-center gap-1"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isSpinningTurn ? 'animate-spin' : ''}`} />
+                  {isSpinningTurn ? 'Sorteando...' : 'Girar Nomes'}
+                </button>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-[#D4AF37]">Gargalo (Quem Recebe):</span>
-                <strong className="text-[#2E0B12] bg-[#EEDBB7] px-2 py-0.5 rounded font-cinzel">
-                  {bottleResult.target.name}
-                </strong>
+
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-[#120104] p-2 rounded-xl border border-[#D4AF37]/30">
+                  <span className="text-[10px] text-[#D4AF37]/80 block font-cinzel font-bold">
+                    QUEM PERGUNTA / FAZ:
+                  </span>
+                  <span className={`font-cinzel text-sm font-bold block mt-0.5 ${isSpinningTurn ? 'text-amber-400 animate-pulse' : 'text-[#FFDF78]'}`}>
+                    {activeAuthor ? activeAuthor.name : '—'}
+                  </span>
+                </div>
+
+                <div className="bg-[#120104] p-2 rounded-xl border border-[#D4AF37]/30">
+                  <span className="text-[10px] text-[#D4AF37]/80 block font-cinzel font-bold">
+                    QUEM RESPONDE / RECEBE:
+                  </span>
+                  <span className={`font-cinzel text-sm font-bold block mt-0.5 ${isSpinningTurn ? 'text-amber-400 animate-pulse' : 'text-[#FFDF78]'}`}>
+                    {activeTarget ? activeTarget.name : '—'}
+                  </span>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="bg-[#FAF4E6] p-3 rounded-lg border border-[#D4AF37]/30 my-2">
-              <span className="text-[10px] uppercase font-cinzel font-bold text-[#8A0E26] block mb-1">
-                DESAFIO DA GARRAFA:
+          {/* Escolha do Jogador: Verdade ou Desafio? (somente no modo verdade_desafio) */}
+          {selectedSubGame === 'verdade_desafio' && (
+            <div className="card-pergaminho p-3 border border-[#D4AF37]/50 text-center space-y-2">
+              <span className="text-[11px] font-cinzel font-bold text-[#8A0E26] block">
+                {activeTarget ? activeTarget.name : 'Jogador'}, VOCÊ ESCOLHE:
               </span>
-              <p className="font-serif text-sm text-[#2E0B12] leading-relaxed italic font-medium">
-                {injectNames(bottleResult.challenge.text, bottleResult.author, bottleResult.target)}
-              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { setChosenType('verdade'); setCurrentIdx((prev) => prev + 1); }}
+                  className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
+                    chosenType === 'verdade'
+                      ? 'bg-[#184824] text-white border-emerald-400 shadow-md scale-102'
+                      : 'bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50'
+                  }`}
+                >
+                  😇 VERDADE
+                </button>
+                <button
+                  onClick={() => { setChosenType('desafio'); setCurrentIdx((prev) => prev + 1); }}
+                  className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
+                    chosenType === 'desafio'
+                      ? 'bg-[#8A0E26] text-white border-rose-400 shadow-md scale-102'
+                      : 'bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50'
+                  }`}
+                >
+                  🔥 DESAFIO
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Seletor de Nível (somente no Verdade ou Desafio) */}
+          {selectedSubGame === 'verdade_desafio' && (
+            <div className="bg-[#1C0307] p-2 rounded-xl border border-[#D4AF37]/30 flex items-center justify-between gap-1 text-[11px] font-cinzel">
+              <span className="text-[#D4AF37] font-bold text-[10px] px-1">NÍVEL:</span>
+              <div className="flex gap-1 flex-1 justify-end">
+                <button
+                  onClick={() => { setSelectedLevel('todos'); setCurrentIdx(0); }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                    selectedLevel === 'todos'
+                      ? 'bg-[#D4AF37] text-black shadow'
+                      : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
+                  }`}
+                >
+                  Auto (N{autoLevel})
+                </button>
+                <button
+                  onClick={() => { setSelectedLevel(1); setCurrentIdx(0); }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                    selectedLevel === 1
+                      ? 'bg-[#8A0E26] text-white shadow border border-[#D4AF37]/50'
+                      : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
+                  }`}
+                >
+                  N1
+                </button>
+                <button
+                  onClick={() => { setSelectedLevel(2); setCurrentIdx(0); }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                    selectedLevel === 2
+                      ? 'bg-[#8A0E26] text-white shadow border border-[#D4AF37]/50'
+                      : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
+                  }`}
+                >
+                  N2
+                </button>
+                <button
+                  onClick={() => { setSelectedLevel(3); setCurrentIdx(0); }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                    selectedLevel === 3
+                      ? 'bg-[#8A0E26] text-white shadow border border-[#D4AF37]/50'
+                      : 'bg-[#2A050B] text-[#F6EAD2]/70 hover:text-white'
+                  }`}
+                >
+                  N3
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Card Pergaminho do Desafio / Eu Nunca */}
+          <div className="card-pergaminho p-5 border-2 border-[#D4AF37]/60 text-center relative overflow-hidden">
+            {/* Selo do Nível */}
+            <div className="inline-block bg-gradient-to-r from-[#8A0E26] to-[#B5173B] text-white font-cinzel text-[10px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm mb-3">
+              {currentChallenge.type.replace('_', ' ')} • Nível {currentChallenge.level} ({gameMode})
             </div>
 
-            <div className="flex gap-2 pt-1">
+            {/* Ilustração ou Ícone da Carta */}
+            <div className="w-24 h-24 mx-auto my-2 rounded-full border-2 border-[#D4AF37]/70 overflow-hidden shadow-lg bg-[#180206] flex items-center justify-center relative">
+              {gameMode === 'amigos' ? (
+                <div className="text-3xl">🥂</div>
+              ) : (
+                <img
+                  src="/assets/card-silhouette-gold.webp"
+                  alt="Silhueta Íntima"
+                  className="w-full h-full object-cover transition duration-300 hover:scale-105"
+                />
+              )}
+            </div>
+
+            {/* Texto do Desafio com Nomes Injetados e Pronomes Adaptativos */}
+            <p className="font-serif text-base sm:text-lg text-[#2E0B12] leading-relaxed my-3 font-medium px-2">
+              {injectNames(currentChallenge.text, activeAuthor, activeTarget)}
+            </p>
+
+            {/* Cronômetro (se houver) */}
+            {timerLeft !== null && (
+              <div className="my-3 flex flex-col items-center justify-center">
+                <div className="flex items-center gap-2 bg-[#F3E5CA] px-4 py-1.5 rounded-full border border-[#D4AF37]/50 text-[#3D120B]">
+                  <span className="font-mono font-bold text-sm">
+                    00:{timerLeft < 10 ? `0${timerLeft}` : timerLeft}
+                  </span>
+                  <button
+                    aria-label={isTimerRunning ? 'Pausar cronômetro' : 'Iniciar cronômetro'}
+                    title={isTimerRunning ? 'Pausar' : 'Iniciar'}
+                    onClick={() => setIsTimerRunning(!isTimerRunning)}
+                    className="p-1 rounded-full bg-[#8A0E26] text-white hover:bg-[#A31230] transition"
+                  >
+                    {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    aria-label="Reiniciar cronômetro"
+                    title="Reiniciar"
+                    onClick={() => {
+                      setIsTimerRunning(false);
+                      setTimerLeft(currentChallenge.timeSeconds || 15);
+                    }}
+                    className="p-1 rounded-full bg-[#3D120B] text-white hover:bg-black transition"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <span className="text-[10px] text-[#6E3C2B] mt-1 font-sans">
+                  Timer na carta • Cronometre a ação!
+                </span>
+              </div>
+            )}
+
+            {/* Botão de Conclusão e Ações de Jogo */}
+            <div className="space-y-2 mt-4">
               <button
-                onClick={() => {
-                  onAddScore(bottleResult.challenge.points);
-                  setBottleResult(null);
-                  confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
-                }}
-                className="flex-1 py-2 bg-gradient-to-r from-[#D4AF37] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-xs rounded-lg shadow transition hover:brightness-110 flex items-center justify-center gap-1"
+                onClick={handleComplete}
+                className="w-full py-3 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] hover:brightness-110 active:scale-[0.98] text-[#1F0307] font-cinzel font-bold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 border border-[#FFDF78]/50"
               >
-                <CheckCircle className="w-3.5 h-3.5" /> Cumpriram (+{bottleResult.challenge.points} pts)
+                <CheckCircle className="w-4 h-4 text-[#8A0E26]" />
+                CUMPRI O DESAFIO (+{currentChallenge.points} pts)
               </button>
-              <button
-                onClick={() => setBottleResult(null)}
-                className="px-3 py-2 bg-[#3D120B] text-[#F6EAD2] font-sans text-xs rounded-lg transition hover:bg-[#52190F]"
-              >
-                Fechar
-              </button>
+
+              {/* Opções de Recusa / Beber / Pagar Prenda / Pular */}
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={handleRefusal}
+                  className="py-2.5 px-1 bg-[#3D120B] hover:bg-[#52190F] active:scale-[0.97] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#D4AF37]/30"
+                  title="Beber 1 gole (ou água/suco)"
+                >
+                  <span className="flex items-center gap-1">
+                    <Beer className="w-3.5 h-3.5 text-amber-400" />
+                    BEBER
+                  </span>
+                  <span className="text-[8px] opacity-70 font-normal">1 gole / suco</span>
+                </button>
+
+                <button
+                  onClick={handleRefusal}
+                  className="py-2.5 px-1 bg-[#751124] hover:bg-[#8F162D] active:scale-[0.97] text-white font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#FFDF78]/30"
+                  title="Pagar prenda combinada"
+                >
+                  <span className="flex items-center gap-1">
+                    <Wine className="w-3.5 h-3.5 text-yellow-300" />
+                    PRENDA
+                  </span>
+                  <span className="text-[8px] opacity-70 font-normal">pagar prenda</span>
+                </button>
+
+                <button
+                  onClick={handleSkip}
+                  className="py-2.5 px-1 bg-[#241316] hover:bg-[#381B20] active:scale-[0.97] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#D4AF37]/30"
+                  title="Pular esta carta e passar a vez"
+                >
+                  <span className="flex items-center gap-1">
+                    <SkipForward className="w-3.5 h-3.5 text-slate-300" />
+                    PULAR
+                  </span>
+                  <span className="text-[8px] opacity-70 font-normal">passar a vez</span>
+                </button>
+              </div>
+
+              {/* Trocar com Coringa e Ações Especiais de Resgate / Esfriar */}
+              <div className="pt-1 space-y-1.5">
+                <button
+                  onClick={handleCoringa}
+                  className="w-full py-2 bg-[#F3E5CA]/80 hover:bg-[#F3E5CA] border border-[#D4AF37]/50 rounded-xl text-[11px] text-[#5C2B1D] hover:text-[#8A0E26] font-semibold flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-[#8A0E26]" /> Trocar Carta com Coringa (Gasta 20 pts • {coringas} disponíveis)
+                </button>
+
+                {/* Ações Especiais da Partida: Carta Resgate / Esfriar / Saída Segura */}
+                <div className="grid grid-cols-3 gap-1.5 pt-1 text-[10px]">
+                  <button
+                    onClick={handleRescueCard}
+                    className="py-1.5 px-1 bg-[#1C0307] hover:bg-[#2A050B] text-[#FFDF78] border border-[#D4AF37]/40 rounded-lg font-cinzel font-bold flex items-center justify-center gap-1 transition"
+                    title="Carta Resgate: inverte quem pergunta e quem responde"
+                  >
+                    <HeartHandshake className="w-3 h-3 text-[#D4AF37]" /> Resgate (Inverter)
+                  </button>
+
+                  <button
+                    onClick={handleCoolDown}
+                    className="py-1.5 px-1 bg-[#1C0307] hover:bg-[#2A050B] text-sky-300 border border-sky-400/30 rounded-lg font-cinzel font-bold flex items-center justify-center gap-1 transition"
+                    title="Voltar 1 nível de intensidade caso o clima esteja muito quente"
+                  >
+                    <ArrowDown className="w-3 h-3" /> Esfriar (-1 Nível)
+                  </button>
+
+                  <button
+                    onClick={handleSafeExit}
+                    className="py-1.5 px-1 bg-[#240306] hover:bg-[#38050A] text-rose-300 border border-rose-500/30 rounded-lg font-cinzel font-bold flex items-center justify-center gap-1 transition"
+                    title="Pausa segura sem constrangimento"
+                  >
+                    <ShieldAlert className="w-3 h-3" /> Parada Segura
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };

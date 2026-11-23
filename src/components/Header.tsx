@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, Shield, AlertTriangle, Crown } from 'lucide-react';
+import { Volume2, VolumeX, Shield, AlertTriangle, Crown, Trophy, PlusCircle } from 'lucide-react';
 
 interface HeaderProps {
   isPlayingAudio: boolean;
@@ -7,6 +7,8 @@ interface HeaderProps {
   onPanicMode: () => void;
   onOpenPinModal: () => void;
   onOpenVipModal: () => void;
+  onOpenConquistasModal?: () => void;
+  onOpenCriarModal?: () => void;
   isVip: boolean;
   score: number;
   coringas: number;
@@ -18,6 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   onPanicMode,
   onOpenPinModal,
   onOpenVipModal,
+  onOpenConquistasModal,
+  onOpenCriarModal,
   isVip,
   score,
   coringas
@@ -41,13 +45,26 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Direita: Ações Rápidas (Áudio, Pânico, PIN, VIP) */}
+      {/* Direita: Ações Rápidas (Conquistas, Criar, Áudio, Pânico, PIN, VIP) */}
       <div className="flex items-center gap-1.5 sm:gap-2">
-        {/* Pontos & Coringas */}
-        <div className="hidden xs:flex flex-col items-end mr-1 text-[11px] leading-tight font-sans">
+        {/* Conquistas & Pontos (Clicável) */}
+        <button
+          onClick={onOpenConquistasModal}
+          className="flex items-center gap-1 bg-[#240307] hover:bg-[#38050B] border border-[#D4AF37]/40 px-2 py-1 rounded-xl text-[11px] leading-tight font-sans transition"
+          title="Ver Conquistas & Barra de Evolução da Noite"
+        >
+          <Trophy className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-[#FFDF78] font-bold">{score} pts</span>
-          <span className="text-[#F6EAD2]/70 text-[9px]">{coringas} coringas</span>
-        </div>
+        </button>
+
+        {/* Botão Criar Desafio / Posição */}
+        <button
+          onClick={onOpenCriarModal}
+          className="p-1.5 rounded-full bg-[#2A050B] border border-[#D4AF37]/40 text-[#FFDF78] hover:bg-[#3D0811] transition"
+          title="Criar Desafio ou Posição Personalizada"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+        </button>
 
         {/* Botão de Áudio Sexy */}
         <button
@@ -91,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
           }`}
         >
           <Crown className="w-3 h-3 text-yellow-300" />
-          <span>{isVip ? 'VIP ATIVO' : 'SEJA VIP'}</span>
+          <span className="hidden xs:inline">{isVip ? 'VIP' : 'SEJA VIP'}</span>
         </button>
       </div>
     </header>

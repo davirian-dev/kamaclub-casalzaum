@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Position } from '../types';
-import { Star, Check, Bookmark, ArrowLeft, Heart, Sparkles, SlidersHorizontal, Lock } from 'lucide-react';
+import { Star, Check, Bookmark, ArrowLeft, Heart, Sparkles, SlidersHorizontal, Lock, Dices, Filter } from 'lucide-react';
 
 interface PositionsViewProps {
   positions: Position[];
@@ -34,6 +34,8 @@ export const PositionsView: React.FC<PositionsViewProps> = ({
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [filterTab, setFilterTab] = useState<'todas' | 'favoritas' | 'fazer' | 'feitas'>('todas');
   const [activeRoleView, setActiveRoleView] = useState<'ativo' | 'passivo' | 'versatil'>('ativo');
+  const [selectedCategory, setSelectedCategory] = useState<string>('todas');
+  const [selectedComplexity, setSelectedComplexity] = useState<string>('todas');
 
   // Sliders de preferência (Intimidade, Complexidade, Força)
   const [intimidade, setIntimidade] = useState(3);
@@ -46,6 +48,14 @@ export const PositionsView: React.FC<PositionsViewProps> = ({
     filtered = filtered.filter((p) => p.category !== 'lgbtqia' && p.category !== 'menage' && p.category !== 'swing');
   }
 
+  if (selectedCategory !== 'todas') {
+    filtered = filtered.filter((p) => p.category === selectedCategory);
+  }
+
+  if (selectedComplexity !== 'todas') {
+    filtered = filtered.filter((p) => p.complexity === selectedComplexity);
+  }
+
   if (filterTab === 'favoritas') {
     filtered = filtered.filter((p) => favoriteIds.includes(p.id));
   } else if (filterTab === 'fazer') {
@@ -53,6 +63,12 @@ export const PositionsView: React.FC<PositionsViewProps> = ({
   } else if (filterTab === 'feitas') {
     filtered = filtered.filter((p) => doneIds.includes(p.id));
   }
+
+  const handleRandomPosition = () => {
+    if (filtered.length === 0) return;
+    const rand = filtered[Math.floor(Math.random() * filtered.length)];
+    setSelectedPosition(rand);
+  };
 
   // Se o Modo Amigos (Leve) estiver ativado, bloqueia/oculta posições íntimas
   if (gameMode === 'amigos') {
@@ -265,19 +281,54 @@ export const PositionsView: React.FC<PositionsViewProps> = ({
   // Lista do Catálogo com Filtros
   return (
     <div className="space-y-4 pb-20">
-      {/* Abas Superiores (Todas, Favoritas, Fazer, Feitas) */}
-      <div className="flex items-center justify-between bg-[#1A0206] p-1.5 rounded-xl border border-[#D4AF37]/30">
-        {(['todas', 'favoritas', 'fazer', 'feitas'] as const).map((tab) => (
+      {/* Abas Superiores (Todas, Favoritas, Fazer, Feitas) + Botão Aleatório */}
+      <div className="flex items-center justify-between gap-1 bg-[#1A0206] p-1.5 rounded-xl border border-[#D4AF37]/30">
+        <div className="flex gap-1 overflow-x-auto">
+          {(['todas', 'favoritas', 'fazer', 'feitas'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setFilterTab(tab)}
+              className={`py-1 px-2.5 rounded-lg text-[11px] capitalize font-cinzel transition whitespace-nowrap ${
+                filterTab === tab
+                  ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-sm'
+                  : 'text-[#F6EAD2]/70 hover:text-white'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={handleRandomPosition}
+          className="py-1 px-2.5 bg-gradient-to-r from-[#D4AF37] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-[11px] rounded-lg shadow hover:brightness-110 active:scale-95 transition flex items-center gap-1 whitespace-nowrap"
+          title="Abrir uma posição aleatória do catálogo"
+        >
+          <Dices className="w-3.5 h-3.5" /> Aleatório
+        </button>
+      </div>
+
+      {/* Filtros Rápidos de Categoria */}
+      <div className="flex gap-1 overflow-x-auto pb-1 text-[10px] font-sans">
+        {[
+          { id: 'todas', label: 'Todas' },
+          { id: 'classicas', label: 'Clássicas' },
+          { id: 'controle', label: 'Controle' },
+          { id: 'profundidade', label: 'Profundidade' },
+          { id: 'acrobaticas', label: 'Acrobáticas' },
+          { id: 'oral', label: 'Oral' },
+          ...(!hideLgbt ? [{ id: 'menage', label: 'Ménage' }, { id: 'lgbtqia', label: 'LGBTQIA+' }] : [])
+        ].map((cat) => (
           <button
-            key={tab}
-            onClick={() => setFilterTab(tab)}
-            className={`py-1.5 px-3 rounded-lg text-xs capitalize font-cinzel transition ${
-              filterTab === tab
-                ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-sm'
-                : 'text-[#F6EAD2]/70 hover:text-white'
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={`px-2 py-1 rounded-full whitespace-nowrap border transition ${
+              selectedCategory === cat.id
+                ? 'bg-[#8A0E26] text-white border-[#D4AF37] font-bold shadow-xs'
+                : 'bg-[#1F0307] text-[#F6EAD2]/70 border-[#D4AF37]/30 hover:text-white'
             }`}
           >
-            {tab}
+            {cat.label}
           </button>
         ))}
       </div>

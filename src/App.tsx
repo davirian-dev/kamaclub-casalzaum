@@ -7,6 +7,8 @@ import { RodaSetup } from './components/RodaSetup';
 import { LugaresIdeiasView } from './components/LugaresIdeiasView';
 import { ClubeVipModal } from './components/ClubeVipModal';
 import { PinModal } from './components/PinModal';
+import { ConquistasModal } from './components/ConquistasModal';
+import { CriarPersonalizadoModal } from './components/CriarPersonalizadoModal';
 import { audioPlayer } from './utils/audio';
 import {
   INITIAL_POSITIONS,
@@ -14,7 +16,7 @@ import {
   INITIAL_PLACES,
   INITIAL_IDEAS
 } from './data/mockData';
-import { Participant, GameMode, IdeaCard } from './types';
+import { Participant, GameMode, IdeaCard, Challenge, Position } from './types';
 import { ShieldCheck, ExternalLink, Heart, Sparkles, MessageSquare, Download } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -37,10 +39,29 @@ export const App: React.FC = () => {
   const [isPanicActive, setIsPanicActive] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [isVipModalOpen, setIsVipModalOpen] = useState(false);
+  const [isConquistasModalOpen, setIsConquistasModalOpen] = useState(false);
+  const [isCriarModalOpen, setIsCriarModalOpen] = useState(false);
   const [currentPin, setCurrentPin] = useState(() => localStorage.getItem('kama_pin') || '');
   const [isVip, setIsVip] = useState(() => localStorage.getItem('kama_vip') === 'true');
   const [score, setScore] = useState(() => Number(localStorage.getItem('kama_score')) || 120);
   const [coringas, setCoringas] = useState(() => Number(localStorage.getItem('kama_coringas')) || 3);
+
+  // Desafios e Posições Customizadas salvas no navegador
+  const [customChallenges, setCustomChallenges] = useState<Challenge[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kama_custom_challenges') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const [customPositions, setCustomPositions] = useState<Position[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kama_custom_positions') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   // Instalação PWA
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -231,6 +252,20 @@ export const App: React.FC = () => {
     handleAddScore(50);
   };
 
+  // Adicionar Desafio Customizado
+  const handleAddCustomChallenge = (ch: Challenge) => {
+    setCustomChallenges((prev) => [ch, ...prev]);
+    localStorage.setItem('kama_custom_challenges', JSON.stringify([ch, ...customChallenges]));
+    handleAddScore(30);
+  };
+
+  // Adicionar Posição Customizada
+  const handleAddCustomPosition = (pos: Position) => {
+    setCustomPositions((prev) => [pos, ...prev]);
+    localStorage.setItem('kama_custom_positions', JSON.stringify([pos, ...customPositions]));
+    handleAddScore(40);
+  };
+
   // Ativação VIP Mercado Pago
   const handleActivateVip = () => {
     setIsVip(true);
@@ -308,6 +343,8 @@ export const App: React.FC = () => {
           onPanicMode={handlePanicMode}
           onOpenPinModal={() => setIsPinModalOpen(true)}
           onOpenVipModal={() => setIsVipModalOpen(true)}
+          onOpenConquistasModal={() => setIsConquistasModalOpen(true)}
+          onOpenCriarModal={() => setIsCriarModalOpen(true)}
           isVip={isVip}
           score={score}
           coringas={coringas}
@@ -317,7 +354,7 @@ export const App: React.FC = () => {
         <main className="flex-1 p-3.5 pb-28">
           {currentTab === 'jogar' && (
             <GameView
-              challenges={INITIAL_CHALLENGES}
+              challenges={[...INITIAL_CHALLENGES, ...customChallenges]}
               participants={participants}
               gameMode={gameMode}
               onAddScore={handleAddScore}
@@ -331,7 +368,7 @@ export const App: React.FC = () => {
 
           {currentTab === 'posicoes' && (
             <PositionsView
-              positions={INITIAL_POSITIONS}
+              positions={[...INITIAL_POSITIONS, ...customPositions]}
               doneIds={donePositionIds}
               favoriteIds={favoritePositionIds}
               todoIds={todoPositionIds}
@@ -401,6 +438,16 @@ export const App: React.FC = () => {
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Área VIP & Conteúdos Sem Censura
                   </a>
+
+                  <div className="pt-4 flex items-center justify-center gap-4 text-[11px] text-[#5C2B1D]/80">
+                    <a href="/privacidade.html" className="hover:text-[#2E0B12] underline underline-offset-2">
+                      Privacidade & LGPD
+                    </a>
+                    <span>•</span>
+                    <a href="/termos.html" className="hover:text-[#2E0B12] underline underline-offset-2">
+                      Termos & 18+
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -427,6 +474,22 @@ export const App: React.FC = () => {
             localStorage.setItem('kama_pin', pin);
           }}
           onUnlockSuccess={() => {}}
+        />
+
+        <ConquistasModal
+          isOpen={isConquistasModalOpen}
+          onClose={() => setIsConquistasModalOpen(false)}
+          score={score}
+          donePositionsCount={donePositionIds.length}
+          donePlacesCount={places.reduce((acc, cat) => acc + cat.items.filter((it) => it.done).length, 0)}
+          roundNumber={1}
+        />
+
+        <CriarPersonalizadoModal
+          isOpen={isCriarModalOpen}
+          onClose={() => setIsCriarModalOpen(false)}
+          onAddChallenge={handleAddCustomChallenge}
+          onAddPosition={handleAddCustomPosition}
         />
       </div>
     </div>
