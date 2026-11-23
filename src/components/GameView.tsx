@@ -3,6 +3,38 @@ import { Challenge, Participant, GameMode } from '../types';
 import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+// Helper: retorna pronomes corretos com base no gênero do participante
+function getPronouns(p: Participant | null) {
+  if (!p) return { possessivo: 'do seu par', reto: 'você', obliquo: 'x' };
+  const isMale = p.gender === 'homem_cis' || p.gender === 'homem_trans';
+  const isFemale = p.gender === 'mulher_cis' || p.gender === 'mulher_trans';
+  return {
+    possessivo: isMale ? 'dele' : isFemale ? 'dela' : 'do seu par',
+    reto: isMale ? 'ele' : isFemale ? 'ela' : 'elu',
+    obliquo: isMale ? 'o' : isFemale ? 'a' : 'x',
+  };
+}
+
+// Injeta nomes e pronomes adaptativos no texto do desafio
+function injectNames(
+  text: string,
+  author: Participant | null,
+  target: Participant | null
+): string {
+  const tp = getPronouns(target);
+  const ap = getPronouns(author);
+  return text
+    .replace(/Pessoa A/g, author?.name || 'Você')
+    .replace(/Pessoa B/g, target?.name || 'Seu Par')
+    .replace(/\bdela\b/g, tp.possessivo)
+    .replace(/\bdele\b/g, tp.possessivo)
+    .replace(/\bdo seu par\b/g, tp.possessivo)
+    .replace(/\bela\b/g, tp.reto)
+    .replace(/\bele\b/g, tp.reto)
+    .replace(/\ba ela\b/g, `${tp.obliquo} ${target?.name || 'você'}`)
+    .replace(/\ba ele\b/g, `${tp.obliquo} ${target?.name || 'você'}`);
+}
+
 interface GameViewProps {
   challenges: Challenge[];
   participants: Participant[];
@@ -186,11 +218,9 @@ export const GameView: React.FC<GameViewProps> = ({
           />
         </div>
 
-        {/* Texto do Desafio com Nomes Injetados */}
+        {/* Texto do Desafio com Nomes Injetados e Pronomes Adaptativos */}
         <p className="font-serif text-base sm:text-lg text-[#2E0B12] leading-relaxed my-3 font-medium px-2">
-          {currentChallenge.text
-            .replace(/Pessoa A/g, activeAuthor?.name || 'Você')
-            .replace(/Pessoa B/g, activeTarget?.name || 'Seu Par')}
+          {injectNames(currentChallenge.text, activeAuthor, activeTarget)}
         </p>
 
         {/* Cronômetro (se houver) */}
@@ -201,12 +231,16 @@ export const GameView: React.FC<GameViewProps> = ({
                 00:{timerLeft < 10 ? `0${timerLeft}` : timerLeft}
               </span>
               <button
+                aria-label={isTimerRunning ? 'Pausar cronômetro' : 'Iniciar cronômetro'}
+                title={isTimerRunning ? 'Pausar' : 'Iniciar'}
                 onClick={() => setIsTimerRunning(!isTimerRunning)}
                 className="p-1 rounded-full bg-[#8A0E26] text-white hover:bg-[#A31230] transition"
               >
                 {isTimerRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
               </button>
               <button
+                aria-label="Reiniciar cronômetro"
+                title="Reiniciar"
                 onClick={() => {
                   setIsTimerRunning(false);
                   setTimerLeft(currentChallenge.timeSeconds || 15);
@@ -236,10 +270,13 @@ export const GameView: React.FC<GameViewProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={handleRefusal}
-              className="py-2 bg-[#3D120B] hover:bg-[#52190F] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex items-center justify-center gap-1.5"
+              className="py-2 bg-[#3D120B] hover:bg-[#52190F] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center gap-0.5"
             >
-              <Beer className="w-3.5 h-3.5 text-amber-400" />
-              BEBER 1 GOLE
+              <span className="flex items-center gap-1.5">
+                <Beer className="w-3.5 h-3.5 text-amber-400" />
+                BEBER 1 GOLE
+              </span>
+              <span className="text-[9px] opacity-60 font-normal">ou água/suco sem álcool</span>
             </button>
 
             <button

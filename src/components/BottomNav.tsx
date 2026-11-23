@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, BookOpen, Users, Compass, ShieldAlert } from 'lucide-react';
+import { Flame, BookOpen, Users, Compass, Crown } from 'lucide-react';
 
 export type TabType = 'jogar' | 'posicoes' | 'roda' | 'lugares' | 'clube';
 
@@ -14,11 +14,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onChangeTab })
     { id: 'posicoes', label: 'Posições', icon: BookOpen },
     { id: 'roda', label: 'Roda / Perfis', icon: Users },
     { id: 'lugares', label: 'Lugares', icon: Compass },
-    { id: 'clube', label: 'O Clube', icon: ShieldAlert },
+    { id: 'clube', label: 'O Clube', icon: Crown },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#160104]/98 backdrop-blur-lg border-t border-[#D4AF37]/30 py-1.5 px-2 flex justify-around items-center">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 bg-[#160104]/98 backdrop-blur-lg border-t border-[#D4AF37]/30 py-1.5 px-2 flex justify-around items-center">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = currentTab === tab.id;
