@@ -86,19 +86,52 @@ export const GameView: React.FC<GameViewProps> = ({
   const [bottleAngle, setBottleAngle] = useState(0);
   const [isSpinningBottle, setIsSpinningBottle] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<number | 'todos'>('todos');
+  const [isSpinningTurn, setIsSpinningTurn] = useState(false);
+  const [chosenType, setChosenType] = useState<'verdade' | 'desafio' | null>(null);
   const [bottleResult, setBottleResult] = useState<{
     author: Participant;
     target: Participant;
     challenge: Challenge;
   } | null>(null);
 
-  // Filtra desafios pelo modo da partida e pelo nível selecionado
+  // Filtra desafios pelo modo da partida, nível selecionado e tipo (Verdade ou Desafio se escolhido)
   const availableChallenges = challenges.filter((c) => {
     if (c.mode !== gameMode) return false;
     if (selectedLevel !== 'todos' && c.level !== selectedLevel) return false;
+    if (chosenType && c.type !== chosenType) return false;
     return true;
   });
   const currentChallenge = availableChallenges[currentIdx % (availableChallenges.length || 1)] || challenges[0];
+
+  // Sorteia quem faz e quem recebe com animação de roleta de nomes
+  const spinTurn = () => {
+    if (participants.length < 2 || isSpinningTurn) return;
+    setIsSpinningTurn(true);
+    setChosenType(null); // Reseta a escolha para escolher Verdade ou Desafio
+
+    let counter = 0;
+    const interval = setInterval(() => {
+      const randomAuthor = participants[Math.floor(Math.random() * participants.length)];
+      const otherTargets = participants.filter((p) => p.id !== randomAuthor.id);
+      const randomTarget = otherTargets[Math.floor(Math.random() * otherTargets.length)] || randomAuthor;
+      setActiveAuthor(randomAuthor);
+      setActiveTarget(randomTarget);
+      counter++;
+
+      if (counter > 12) {
+        clearInterval(interval);
+        // Sorteio definitivo respeitando orientações
+        sortParticipants();
+        setIsSpinningTurn(false);
+        confetti({
+          particleCount: 35,
+          spread: 50,
+          origin: { y: 0.4 },
+          colors: ['#D4AF37', '#FFDF78', '#8A0E26']
+        });
+      }
+    }, 100);
+  };
 
   // Sorteia quem faz e quem recebe garantindo que sejam participantes distintos
   const sortParticipants = () => {
@@ -178,11 +211,13 @@ export const GameView: React.FC<GameViewProps> = ({
       colors: ['#D4AF37', '#8A0E26', '#FFDF78']
     });
     onAddScore(currentChallenge.points);
+    setChosenType(null);
     setCurrentIdx((prev) => prev + 1);
   };
 
   // Recusa / Beber / Pagar Prenda
   const handleRefusal = () => {
+    setChosenType(null);
     setCurrentIdx((prev) => prev + 1);
   };
 
@@ -198,6 +233,7 @@ export const GameView: React.FC<GameViewProps> = ({
 
   // Pular desafio sem pontuar
   const handleSkip = () => {
+    setChosenType(null);
     setCurrentIdx((prev) => prev + 1);
   };
 
@@ -295,26 +331,72 @@ export const GameView: React.FC<GameViewProps> = ({
         )}
       </div>
 
-      {/* Banner de Rodada e Participantes Atuais */}
-      <div className="bg-[#1F0307]/90 border border-[#D4AF37]/40 rounded-xl p-2.5 flex items-center justify-between text-xs font-sans">
-        <div>
-          <span className="text-[#FFDF78] font-bold block font-cinzel">
-            VEZ DE: {activeAuthor ? activeAuthor.name : 'Jogador'}
-          </span>
-          <span className="text-[#F6EAD2]/80 text-[11px]">
-            Para: <strong className="text-[#FFDF78]">{activeTarget ? activeTarget.name : 'Jogador'}</strong>{' '}
-            {gameMode !== 'amigos' && activeTarget?.role && (
-              <span className="text-[10px] bg-[#8A0E26] px-1.5 py-0.2 rounded text-white ml-1">
-                {activeTarget.role}
-              </span>
-            )}
-          </span>
+      {/* Banner de Sorteio de Vez / Roleta de Nomes */}
+      <div className="bg-[#1F0307]/95 border-2 border-[#D4AF37]/50 rounded-2xl p-3 shadow-lg space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">🎲</span>
+            <span className="font-cinzel text-xs font-bold text-[#FFDF78] tracking-wider">
+              SORTEIO DE NOMES DA RODADA
+            </span>
+          </div>
+          <button
+            onClick={spinTurn}
+            disabled={isSpinningTurn}
+            className="px-3 py-1 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-[11px] rounded-lg shadow hover:brightness-110 active:scale-95 transition disabled:opacity-50 flex items-center gap-1"
+          >
+            <RefreshCw className={`w-3 h-3 ${isSpinningTurn ? 'animate-spin' : ''}`} />
+            {isSpinningTurn ? 'Sorteando...' : 'Girar Nomes'}
+          </button>
         </div>
-        <div className="text-right">
-          <span className="text-[10px] text-[#D4AF37]/90 uppercase font-bold block">
-            Modo {gameMode}
-          </span>
-          <span className="text-[#FFDF78] font-bold">+{currentChallenge.points} Pts</span>
+
+        <div className="grid grid-cols-2 gap-2 text-center">
+          <div className="bg-[#120104] p-2 rounded-xl border border-[#D4AF37]/30">
+            <span className="text-[10px] text-[#D4AF37]/80 block font-cinzel font-bold">
+              QUEM PERGUNTA / FAZ:
+            </span>
+            <span className={`font-cinzel text-sm font-bold block mt-0.5 ${isSpinningTurn ? 'text-amber-400 animate-pulse' : 'text-[#FFDF78]'}`}>
+              {activeAuthor ? activeAuthor.name : '—'}
+            </span>
+          </div>
+
+          <div className="bg-[#120104] p-2 rounded-xl border border-[#D4AF37]/30">
+            <span className="text-[10px] text-[#D4AF37]/80 block font-cinzel font-bold">
+              QUEM RESPONDE / RECEBE:
+            </span>
+            <span className={`font-cinzel text-sm font-bold block mt-0.5 ${isSpinningTurn ? 'text-amber-400 animate-pulse' : 'text-[#FFDF78]'}`}>
+              {activeTarget ? activeTarget.name : '—'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Escolha do Jogador: Verdade ou Desafio? */}
+      <div className="card-pergaminho p-3 border border-[#D4AF37]/50 text-center space-y-2">
+        <span className="text-[11px] font-cinzel font-bold text-[#8A0E26] block">
+          {activeTarget ? activeTarget.name : 'Jogador'}, VOCÊ ESCOLHE:
+        </span>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => { setChosenType('verdade'); setCurrentIdx((prev) => prev + 1); }}
+            className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
+              chosenType === 'verdade'
+                ? 'bg-[#184824] text-white border-emerald-400 shadow-md scale-102'
+                : 'bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50'
+            }`}
+          >
+            😇 VERDADE
+          </button>
+          <button
+            onClick={() => { setChosenType('desafio'); setCurrentIdx((prev) => prev + 1); }}
+            className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
+              chosenType === 'desafio'
+                ? 'bg-[#8A0E26] text-white border-rose-400 shadow-md scale-102'
+                : 'bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50'
+            }`}
+          >
+            🔥 DESAFIO
+          </button>
         </div>
       </div>
 
