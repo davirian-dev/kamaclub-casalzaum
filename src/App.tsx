@@ -18,7 +18,21 @@ import { Participant, GameMode, IdeaCard } from './types';
 import { ShieldCheck, ExternalLink, Heart, Sparkles, MessageSquare, Download } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<TabType>('jogar');
+  // Se o usuário ainda não tiver cadastrado jogadores, inicia diretamente na tela de configuração
+  const [currentTab, setCurrentTab] = useState<TabType>(() => {
+    const saved = localStorage.getItem('kama_participants');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length >= 2) {
+          return 'jogar';
+        }
+      } catch {
+        // fallback
+      }
+    }
+    return 'roda';
+  });
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isPanicActive, setIsPanicActive] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
@@ -327,6 +341,8 @@ export const App: React.FC = () => {
               hideLgbt={hideLgbt}
               isVip={isVip}
               onOpenVipModal={() => setIsVipModalOpen(true)}
+              gameMode={gameMode}
+              onGoToSetup={() => setCurrentTab('roda')}
             />
           )}
 
@@ -339,6 +355,7 @@ export const App: React.FC = () => {
               hideLgbt={hideLgbt}
               onToggleHideLgbt={setHideLgbt}
               onResetAll={handleResetGame}
+              onStartGame={() => setCurrentTab('jogar')}
             />
           )}
 

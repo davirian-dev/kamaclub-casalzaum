@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Participant, GameMode, GenderIdentity, SexualOrientation, IntimateRole } from '../types';
-import { UserPlus, Trash2, HeartHandshake, ShieldCheck, Sparkles, AlertCircle, RotateCcw } from 'lucide-react';
+import { UserPlus, Trash2, HeartHandshake, ShieldCheck, Sparkles, AlertCircle, RotateCcw, Play } from 'lucide-react';
 
 interface RodaSetupProps {
   participants: Participant[];
@@ -10,6 +10,7 @@ interface RodaSetupProps {
   hideLgbt: boolean;
   onToggleHideLgbt: (hide: boolean) => void;
   onResetAll?: () => void;
+  onStartGame?: () => void;
 }
 
 export const RodaSetup: React.FC<RodaSetupProps> = ({
@@ -19,7 +20,8 @@ export const RodaSetup: React.FC<RodaSetupProps> = ({
   onChangeGameMode,
   hideLgbt,
   onToggleHideLgbt,
-  onResetAll
+  onResetAll,
+  onStartGame
 }) => {
   const [newName, setNewName] = useState('');
   const [newGender, setNewGender] = useState<GenderIdentity>('mulher_cis');
@@ -280,6 +282,19 @@ export const RodaSetup: React.FC<RodaSetupProps> = ({
             + Adicionar à Roda
           </button>
         </div>
+
+        {/* Botão de Iniciar Jogo (visível quando há pelo menos 2 participantes) */}
+        {participants.length >= 2 && onStartGame && (
+          <div className="pt-2">
+            <button
+              onClick={onStartGame}
+              className="w-full py-3 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] hover:brightness-110 active:scale-[0.98] text-[#1F0307] font-cinzel font-bold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 border border-[#FFDF78]/60"
+            >
+              <Play className="w-4 h-4 fill-[#1F0307]" />
+              INICIAR JOGO COM ESSES JOGADORES ({participants.length})
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

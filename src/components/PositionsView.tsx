@@ -13,6 +13,8 @@ interface PositionsViewProps {
   hideLgbt: boolean;
   isVip: boolean;
   onOpenVipModal: () => void;
+  gameMode?: 'amigos' | 'esquenta' | 'kama';
+  onGoToSetup?: () => void;
 }
 
 export const PositionsView: React.FC<PositionsViewProps> = ({
@@ -25,7 +27,9 @@ export const PositionsView: React.FC<PositionsViewProps> = ({
   onToggleTodo,
   hideLgbt,
   isVip,
-  onOpenVipModal
+  onOpenVipModal,
+  gameMode = 'esquenta',
+  onGoToSetup
 }) => {
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [filterTab, setFilterTab] = useState<'todas' | 'favoritas' | 'fazer' | 'feitas'>('todas');
@@ -48,6 +52,39 @@ export const PositionsView: React.FC<PositionsViewProps> = ({
     filtered = filtered.filter((p) => todoIds.includes(p.id));
   } else if (filterTab === 'feitas') {
     filtered = filtered.filter((p) => doneIds.includes(p.id));
+  }
+
+  // Se o Modo Amigos (Leve) estiver ativado, bloqueia/oculta posições íntimas
+  if (gameMode === 'amigos') {
+    return (
+      <div className="space-y-4 pb-20">
+        <div className="card-pergaminho p-6 border-2 border-[#D4AF37]/60 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-[#8A0E26]/20 border border-[#D4AF37] flex items-center justify-center text-3xl">
+            🥂
+          </div>
+          <h2 className="font-cinzel text-lg font-bold text-[#2E0B12]">
+            MODO AMIGOS (LEVE) ATIVO
+          </h2>
+          <p className="text-xs sm:text-sm text-[#5C2B1D] font-serif leading-relaxed px-2">
+            No modo <strong>Amigos (Leve)</strong>, todas as posições íntimas e explícitas ficam protegidas e ocultadas para evitar constrangimentos na roda social.
+          </p>
+          <p className="text-xs text-[#8A0E26] font-medium">
+            Para liberar o catálogo completo de posições, alterne o clima da partida para <strong>Esquenta</strong> ou <strong>Kama +18</strong> na aba Roda / Perfis.
+          </p>
+
+          {onGoToSetup && (
+            <div className="pt-2">
+              <button
+                onClick={onGoToSetup}
+                className="w-full py-3 bg-gradient-to-r from-[#8A0E26] to-[#B5173B] hover:brightness-110 text-white font-cinzel font-bold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+              >
+                ALTERAR MODO DA PARTIDA
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // Visualização Detalhada da Posição

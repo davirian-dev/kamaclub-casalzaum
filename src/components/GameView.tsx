@@ -1,38 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { Challenge, Participant, GameMode } from '../types';
-import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2, SkipForward } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // Helper: retorna pronomes corretos com base no gênero do participante
 function getPronouns(p: Participant | null) {
-  if (!p) return { possessivo: 'do seu par', reto: 'você', obliquo: 'x' };
+  if (!p) return { possessivo: 'do seu par', reto: 'você', obliquo: 'o(a)' };
   const isMale = p.gender === 'homem_cis' || p.gender === 'homem_trans';
   const isFemale = p.gender === 'mulher_cis' || p.gender === 'mulher_trans';
   return {
     possessivo: isMale ? 'dele' : isFemale ? 'dela' : 'do seu par',
     reto: isMale ? 'ele' : isFemale ? 'ela' : 'elu',
-    obliquo: isMale ? 'o' : isFemale ? 'a' : 'x',
+    obliquo: isMale ? 'o' : isFemale ? 'a' : 'elu',
   };
 }
 
-// Injeta nomes e pronomes adaptativos no texto do desafio
+// Injeta nomes e pronomes adaptativos com concordância no texto do desafio
 function injectNames(
   text: string,
   author: Participant | null,
   target: Participant | null
 ): string {
+  const authorName = author?.name || 'Você';
+  const targetName = target?.name || 'Seu Par';
   const tp = getPronouns(target);
   const ap = getPronouns(author);
+
   return text
-    .replace(/Pessoa A/g, author?.name || 'Você')
-    .replace(/Pessoa B/g, target?.name || 'Seu Par')
-    .replace(/\bdela\b/g, tp.possessivo)
-    .replace(/\bdele\b/g, tp.possessivo)
-    .replace(/\bdo seu par\b/g, tp.possessivo)
-    .replace(/\bela\b/g, tp.reto)
-    .replace(/\bele\b/g, tp.reto)
-    .replace(/\ba ela\b/g, `${tp.obliquo} ${target?.name || 'você'}`)
-    .replace(/\ba ele\b/g, `${tp.obliquo} ${target?.name || 'você'}`);
+    // Substituição de marcadores de nomes
+    .replace(/Pessoa A/g, authorName)
+    .replace(/Pessoa B/g, targetName)
+    // Contrações de preposição com pronome para o ALVO (quem recebe a ação)
+    .replace(/\bno corpo dela\b/gi, `no corpo ${tp.possessivo}`)
+    .replace(/\bno ouvido dela\b/gi, `no ouvido ${tp.possessivo}`)
+    .replace(/\bna frente dela\b/gi, `na frente ${tp.possessivo}`)
+    .replace(/\bcom ela\b/gi, `com ${targetName}`)
+    .replace(/\bcom ele\b/gi, `com ${targetName}`)
+    .replace(/\bpara ela\b/gi, `para ${targetName}`)
+    .replace(/\bpara ele\b/gi, `para ${targetName}`)
+    .replace(/\ba ela\b/gi, `a ${targetName}`)
+    .replace(/\ba ele\b/gi, `a ${targetName}`)
+    .replace(/\bsobre ela\b/gi, `sobre ${targetName}`)
+    .replace(/\bsobre ele\b/gi, `sobre ${targetName}`)
+    .replace(/\bcom ela com os olhos vendados\b/gi, `com ${targetName} com os olhos vendados`)
+    .replace(/\bdela\b/gi, tp.possessivo)
+    .replace(/\bdele\b/gi, tp.possessivo)
+    .replace(/\bdo seu par\b/gi, tp.possessivo)
+    .replace(/\bela\b/gi, targetName)
+    .replace(/\bele\b/gi, targetName);
 }
 
 interface GameViewProps {
@@ -70,7 +85,7 @@ export const GameView: React.FC<GameViewProps> = ({
   const availableChallenges = challenges.filter((c) => c.mode === gameMode);
   const currentChallenge = availableChallenges[currentIdx % availableChallenges.length] || challenges[0];
 
-  // Sorteia quem faz e quem recebe com respeito à orientação sexual
+  // Sorteia quem faz e quem recebe garantindo que sejam participantes distintos
   const sortParticipants = () => {
     if (participants.length === 0) {
       setActiveAuthor(null);
@@ -87,7 +102,7 @@ export const GameView: React.FC<GameViewProps> = ({
     const author = participants[authorIdx];
     setActiveAuthor(author);
 
-    // Filtra alvos compatíveis
+    // Filtra alvos compatíveis (sempre excluindo o próprio autor)
     let possibleTargets = participants.filter((p) => p.id !== author.id);
     if (!author.interactsWithAll) {
       if (author.orientation === 'hetero') {
@@ -107,7 +122,7 @@ export const GameView: React.FC<GameViewProps> = ({
     }
 
     const targetIdx = Math.floor(Math.random() * possibleTargets.length);
-    setActiveTarget(possibleTargets[targetIdx] || author);
+    setActiveTarget(possibleTargets[targetIdx] || participants.find((p) => p.id !== author.id) || author);
   };
 
   useEffect(() => {
@@ -166,7 +181,12 @@ export const GameView: React.FC<GameViewProps> = ({
     }
   };
 
-  // Girar a Garrafa +18
+  // Pular desafio sem pontuar
+  const handleSkip = () => {
+    setCurrentIdx((prev) => prev + 1);
+  };
+
+  // Girar a Garrafa
   const handleSpinBottle = () => {
     if (isSpinningBottle) return;
     setIsSpinningBottle(true);
@@ -266,13 +286,17 @@ export const GameView: React.FC<GameViewProps> = ({
           {currentChallenge.type.replace('_', ' ')} • Nível {currentChallenge.level} ({gameMode})
         </div>
 
-        {/* Ilustração ou Ícone Sensual da Carta */}
+        {/* Ilustração ou Ícone da Carta */}
         <div className="w-24 h-24 mx-auto my-2 rounded-full border-2 border-[#D4AF37]/50 overflow-hidden shadow-inner bg-[#1A0206] flex items-center justify-center">
-          <img
-            src="/assets/pos-abraco-sol.jpg"
-            alt="Ilustração"
-            className="w-full h-full object-cover opacity-90 hover:scale-105 transition"
-          />
+          {gameMode === 'amigos' ? (
+            <div className="text-3xl">🥂</div>
+          ) : (
+            <img
+              src="/assets/pos-abraco-sol.jpg"
+              alt="Ilustração"
+              className="w-full h-full object-cover opacity-90 hover:scale-105 transition"
+            />
+          )}
         </div>
 
         {/* Texto do Desafio com Nomes Injetados e Pronomes Adaptativos */}
@@ -313,44 +337,61 @@ export const GameView: React.FC<GameViewProps> = ({
           </div>
         )}
 
-        {/* Botão de Conclusão */}
+        {/* Botão de Conclusão e Ações de Jogo */}
         <div className="space-y-2 mt-4">
           <button
             onClick={handleComplete}
-            className="w-full py-2.5 bg-gradient-to-r from-[#D4AF37] to-[#AA8010] hover:brightness-110 text-[#1F0307] font-cinzel font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-[#D4AF37] via-[#FFDF78] to-[#AA8010] hover:brightness-110 active:scale-[0.98] text-[#1F0307] font-cinzel font-bold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 border border-[#FFDF78]/50"
           >
             <CheckCircle className="w-4 h-4 text-[#8A0E26]" />
             CUMPRI O DESAFIO (+{currentChallenge.points} pts)
           </button>
 
-          {/* Opções de Recusa */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Opções de Recusa / Beber / Pagar Prenda / Pular */}
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={handleRefusal}
-              className="py-2 bg-[#3D120B] hover:bg-[#52190F] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center gap-0.5"
+              className="py-2.5 px-1 bg-[#3D120B] hover:bg-[#52190F] active:scale-[0.97] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#D4AF37]/30"
+              title="Beber 1 gole (ou água/suco)"
             >
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1">
                 <Beer className="w-3.5 h-3.5 text-amber-400" />
-                BEBER 1 GOLE
+                BEBER
               </span>
-              <span className="text-[9px] opacity-60 font-normal">ou água/suco sem álcool</span>
+              <span className="text-[8px] opacity-70 font-normal">1 gole / suco</span>
             </button>
 
             <button
               onClick={handleRefusal}
-              className="py-2 bg-[#751124] hover:bg-[#8F162D] text-white font-sans font-bold text-[11px] rounded-xl transition flex items-center justify-center gap-1.5"
+              className="py-2.5 px-1 bg-[#751124] hover:bg-[#8F162D] active:scale-[0.97] text-white font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#FFDF78]/30"
+              title="Pagar prenda combinada"
             >
-              <Wine className="w-3.5 h-3.5 text-yellow-300" />
-              PAGAR PRENDA
+              <span className="flex items-center gap-1">
+                <Wine className="w-3.5 h-3.5 text-yellow-300" />
+                PRENDA
+              </span>
+              <span className="text-[8px] opacity-70 font-normal">pagar prenda</span>
+            </button>
+
+            <button
+              onClick={handleSkip}
+              className="py-2.5 px-1 bg-[#241316] hover:bg-[#381B20] active:scale-[0.97] text-[#F6EAD2] font-sans font-bold text-[11px] rounded-xl transition flex flex-col items-center justify-center border border-[#D4AF37]/30"
+              title="Pular esta carta e passar a vez"
+            >
+              <span className="flex items-center gap-1">
+                <SkipForward className="w-3.5 h-3.5 text-slate-300" />
+                PULAR
+              </span>
+              <span className="text-[8px] opacity-70 font-normal">passar a vez</span>
             </button>
           </div>
 
           {/* Trocar com Coringa */}
           <button
             onClick={handleCoringa}
-            className="text-[11px] text-[#6E3C2B] hover:text-[#8A0E26] font-medium flex items-center justify-center gap-1 mx-auto pt-1 transition"
+            className="w-full py-2 bg-[#F3E5CA]/80 hover:bg-[#F3E5CA] border border-[#D4AF37]/50 rounded-xl text-[11px] text-[#5C2B1D] hover:text-[#8A0E26] font-semibold flex items-center justify-center gap-1.5 transition active:scale-[0.98] mt-1"
           >
-            <RefreshCw className="w-3 h-3" /> Usar Coringa / Trocar Carta (Gasta 20 pts)
+            <RefreshCw className="w-3.5 h-3.5 text-[#8A0E26]" /> Trocar Carta com Coringa (Gasta 20 pts • {coringas} disponíveis)
           </button>
         </div>
       </div>
