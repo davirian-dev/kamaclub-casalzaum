@@ -265,13 +265,13 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#110103] flex justify-center items-center sm:py-6">
-      {/* Contêiner Mobile First: No celular ocupa 100% da tela com safe areas; no PC vira um smartphone centralizado elegante */}
-      <div className="w-full sm:max-w-md min-h-screen sm:min-h-[844px] sm:max-h-[92vh] bg-damasco text-[#F6EAD2] flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.9)] sm:rounded-[36px] sm:border-[5px] sm:border-[#380710] overflow-hidden">
+    <div className="min-h-screen bg-[#110103] flex justify-center items-start sm:py-6">
+      {/* Contêiner Principal: No celular ocupa 100% da largura/altura sem travar rolagem; no PC centraliza com moldura */}
+      <div className="w-full sm:max-w-md min-h-screen bg-damasco text-[#F6EAD2] flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.9)] sm:rounded-[36px] sm:border-[5px] sm:border-[#380710]">
         
         {/* Banner de Instalação PWA no Celular */}
         {showInstallBanner && (
-          <div className="bg-gradient-to-r from-amber-600 to-yellow-500 text-black px-3 py-1.5 flex items-center justify-between text-xs font-bold z-50 shadow-md">
+          <div className="bg-gradient-to-r from-amber-600 to-yellow-500 text-black px-3 py-1.5 flex items-center justify-between text-xs font-bold z-50 shadow-md sticky top-0">
             <div className="flex items-center gap-1.5">
               <Download className="w-4 h-4" />
               <span>Instalar Kama & Desafios no Celular?</span>
@@ -305,8 +305,8 @@ export const App: React.FC = () => {
           coringas={coringas}
         />
 
-        {/* Conteúdo Principal por Aba com Scroll Suave */}
-        <main className="flex-1 p-3.5 pb-24 overflow-y-auto overscroll-contain">
+        {/* Conteúdo Principal com Rolagem 100% Livre */}
+        <main className="flex-1 p-3.5 pb-28">
           {currentTab === 'jogar' && (
             <GameView
               challenges={INITIAL_CHALLENGES}
