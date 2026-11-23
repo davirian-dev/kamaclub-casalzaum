@@ -1,0 +1,22 @@
+{
+  "name": "Kama & Desafios",
+  "short_name": "KamaDesafios",
+  "description": "Guia de Posições, Desafios Íntimos, Garrafa e Jogos de Esquenta - Clube do Casalzão",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#150104",
+  "theme_color": "#2B040B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/logo-crest.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/assets/logo-crest.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
