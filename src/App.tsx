@@ -52,7 +52,7 @@ export const App: React.FC = () => {
     setDeferredPrompt(null);
   };
 
-  // Participantes da Roda
+  // Participantes da Roda - inicia vazio por padrão para novos usuários
   const [participants, setParticipants] = useState<Participant[]>(() => {
     const saved = localStorage.getItem('kama_participants');
     if (saved) {
@@ -62,24 +62,7 @@ export const App: React.FC = () => {
         // fallback
       }
     }
-    return [
-      {
-        id: 'p-1',
-        name: 'Davi',
-        gender: 'homem_cis',
-        orientation: 'hetero',
-        role: 'ativo',
-        interactsWithAll: false
-      },
-      {
-        id: 'p-2',
-        name: 'Mari',
-        gender: 'mulher_cis',
-        orientation: 'bi_pan',
-        role: 'versatil',
-        interactsWithAll: true
-      }
-    ];
+    return [];
   });
 
   // Clima da Partida
@@ -179,7 +162,18 @@ export const App: React.FC = () => {
     return false;
   };
 
-  // Ações de Posições
+  // Nova Rodada / Limpar Jogadores e Partida
+  const handleResetGame = () => {
+    if (window.confirm('Deseja iniciar uma Nova Rodada e limpar os jogadores configurados?')) {
+      setParticipants([]);
+      localStorage.removeItem('kama_participants');
+      setScore(0);
+      localStorage.setItem('kama_score', '0');
+      setCoringas(3);
+      localStorage.setItem('kama_coringas', '3');
+      setCurrentTab('roda');
+    }
+  };
   const handleToggleDone = (id: string) => {
     setDonePositionIds((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
@@ -316,6 +310,8 @@ export const App: React.FC = () => {
               onUseCoringa={handleUseCoringa}
               score={score}
               coringas={coringas}
+              onGoToSetup={() => setCurrentTab('roda')}
+              onResetGame={handleResetGame}
             />
           )}
 
@@ -342,6 +338,7 @@ export const App: React.FC = () => {
               onChangeGameMode={setGameMode}
               hideLgbt={hideLgbt}
               onToggleHideLgbt={setHideLgbt}
+              onResetAll={handleResetGame}
             />
           )}
 

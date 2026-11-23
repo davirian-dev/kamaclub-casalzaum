@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Participant, GameMode, GenderIdentity, SexualOrientation, IntimateRole } from '../types';
-import { UserPlus, Trash2, HeartHandshake, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
+import { UserPlus, Trash2, HeartHandshake, ShieldCheck, Sparkles, AlertCircle, RotateCcw } from 'lucide-react';
 
 interface RodaSetupProps {
   participants: Participant[];
@@ -9,6 +9,7 @@ interface RodaSetupProps {
   onChangeGameMode: (mode: GameMode) => void;
   hideLgbt: boolean;
   onToggleHideLgbt: (hide: boolean) => void;
+  onResetAll?: () => void;
 }
 
 export const RodaSetup: React.FC<RodaSetupProps> = ({
@@ -17,7 +18,8 @@ export const RodaSetup: React.FC<RodaSetupProps> = ({
   onUpdateParticipants,
   onChangeGameMode,
   hideLgbt,
-  onToggleHideLgbt
+  onToggleHideLgbt,
+  onResetAll
 }) => {
   const [newName, setNewName] = useState('');
   const [newGender, setNewGender] = useState<GenderIdentity>('mulher_cis');
@@ -133,46 +135,62 @@ export const RodaSetup: React.FC<RodaSetupProps> = ({
               PARTICIPANTES DA RODA ({participants.length})
             </h2>
           </div>
+          {participants.length > 0 && onResetAll && (
+            <button
+              onClick={onResetAll}
+              className="flex items-center gap-1 text-[10px] text-red-700 hover:text-red-900 border border-red-300 bg-red-50/70 px-2 py-0.5 rounded-lg transition"
+              title="Limpar todos os jogadores"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Limpar Roda
+            </button>
+          )}
         </div>
 
         {/* Lista de Cadastrados */}
-        <div className="space-y-2">
-          {participants.map((p, idx) => (
-            <div
-              key={p.id}
-              className="bg-[#F7EFE0] p-2.5 rounded-xl border border-[#D4AF37]/40 flex items-center justify-between"
-            >
-              <div>
-                <span className="font-cinzel font-bold text-sm text-[#2E0B12]">
-                  {idx + 1}. {p.name}
-                </span>
-                <div className="flex flex-wrap gap-1.5 mt-1 text-[10px]">
-                  <span className="bg-[#EEDBB7] px-1.5 py-0.5 rounded text-[#421913] font-medium">
-                    {p.gender.replace('_', ' ')}
-                  </span>
-                  <span className="bg-[#EEDBB7] px-1.5 py-0.5 rounded text-[#421913] font-medium">
-                    {p.orientation}
-                  </span>
-                  {gameMode !== 'amigos' && (
-                    <span className="bg-[#8A0E26] text-white px-1.5 py-0.5 rounded font-medium">
-                      Papel: {p.role}
-                    </span>
-                  )}
-                  <span className={`px-1.5 py-0.5 rounded font-medium ${p.interactsWithAll ? 'bg-emerald-700 text-white' : 'bg-amber-800 text-white'}`}>
-                    {p.interactsWithAll ? 'Interage c/ todos' : 'Orientação estrita'}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => handleRemove(p.id)}
-                className="p-1.5 text-red-700 hover:bg-red-100 rounded-lg transition"
-                title="Remover participante"
+        {participants.length === 0 ? (
+          <div className="p-4 border border-dashed border-[#D4AF37]/50 rounded-xl bg-[#FAF3E3] text-center text-xs text-[#5C2B1D]">
+            Nenhum jogador configurado ainda. Adicione os nomes abaixo para começar a jogar!
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {participants.map((p, idx) => (
+              <div
+                key={p.id}
+                className="bg-[#F7EFE0] p-2.5 rounded-xl border border-[#D4AF37]/40 flex items-center justify-between"
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
+                <div>
+                  <span className="font-cinzel font-bold text-sm text-[#2E0B12]">
+                    {idx + 1}. {p.name}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 mt-1 text-[10px]">
+                    <span className="bg-[#EEDBB7] px-1.5 py-0.5 rounded text-[#421913] font-medium">
+                      {p.gender.replace('_', ' ')}
+                    </span>
+                    <span className="bg-[#EEDBB7] px-1.5 py-0.5 rounded text-[#421913] font-medium">
+                      {p.orientation}
+                    </span>
+                    {gameMode !== 'amigos' && (
+                      <span className="bg-[#8A0E26] text-white px-1.5 py-0.5 rounded font-medium">
+                        Papel: {p.role}
+                      </span>
+                    )}
+                    <span className={`px-1.5 py-0.5 rounded font-medium ${p.interactsWithAll ? 'bg-emerald-700 text-white' : 'bg-amber-800 text-white'}`}>
+                      {p.interactsWithAll ? 'Interage c/ todos' : 'Orientação estrita'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRemove(p.id)}
+                  className="p-1.5 text-red-700 hover:bg-red-100 rounded-lg transition"
+                  title="Remover participante"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Formulário para Adicionar */}
         <div className="bg-[#EFE2C8] p-3 rounded-xl border border-[#D4AF37]/40 space-y-2.5 mt-3">

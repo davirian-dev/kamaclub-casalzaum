@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Challenge, Participant, GameMode } from '../types';
-import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine } from 'lucide-react';
+import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // Helper: retorna pronomes corretos com base no gênero do participante
@@ -43,6 +43,8 @@ interface GameViewProps {
   onUseCoringa: () => boolean; // retorna true se conseguiu usar
   score: number;
   coringas: number;
+  onGoToSetup?: () => void;
+  onResetGame?: () => void;
 }
 
 export const GameView: React.FC<GameViewProps> = ({
@@ -52,7 +54,9 @@ export const GameView: React.FC<GameViewProps> = ({
   onAddScore,
   onUseCoringa,
   score,
-  coringas
+  coringas,
+  onGoToSetup,
+  onResetGame
 }) => {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [timerLeft, setTimerLeft] = useState<number | null>(null);
@@ -68,9 +72,14 @@ export const GameView: React.FC<GameViewProps> = ({
 
   // Sorteia quem faz e quem recebe com respeito à orientação sexual
   const sortParticipants = () => {
-    if (participants.length < 2) {
-      setActiveAuthor(participants[0] || null);
-      setActiveTarget(participants[0] || null);
+    if (participants.length === 0) {
+      setActiveAuthor(null);
+      setActiveTarget(null);
+      return;
+    }
+    if (participants.length === 1) {
+      setActiveAuthor(participants[0]);
+      setActiveTarget(participants[0]);
       return;
     }
 
@@ -177,16 +186,64 @@ export const GameView: React.FC<GameViewProps> = ({
     }, 2500);
   };
 
+  // Se não houver participantes cadastrados ou menos de 2 participantes, exibe tela de convite para cadastrar
+  if (participants.length < 2) {
+    return (
+      <div className="space-y-4 pb-20">
+        <div className="card-pergaminho p-6 border-2 border-[#D4AF37]/60 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-[#8A0E26]/20 border border-[#D4AF37] flex items-center justify-center text-3xl">
+            🎭
+          </div>
+          <h2 className="font-cinzel text-lg font-bold text-[#2E0B12]">
+            QUEM VAI JOGAR HOJE?
+          </h2>
+          <p className="text-xs sm:text-sm text-[#5C2B1D] font-serif leading-relaxed px-2">
+            {participants.length === 0
+              ? 'Antes de começar a partida, configure os nomes dos participantes na Roda para que as cartas e desafios sejam personalizados com pronomes e regras exatas.'
+              : `Você adicionou apenas 1 participante (${participants[0].name}). Adicione pelo menos mais uma pessoa para começar a diversão em dupla ou em grupo!`}
+          </p>
+
+          <div className="pt-2">
+            <button
+              onClick={onGoToSetup}
+              className="w-full py-3 bg-gradient-to-r from-[#8A0E26] to-[#B5173B] hover:brightness-110 text-white font-cinzel font-bold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              CONFIGURAR JOGADORES AGORA
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 pb-20">
+      {/* Botão de Ação Rápida: Nova Rodada / Limpar Jogadores */}
+      <div className="flex justify-between items-center px-1">
+        <span className="text-[11px] text-[#D4AF37]/80 font-cinzel">
+          PARTIDA EM ANDAMENTO
+        </span>
+        {onResetGame && (
+          <button
+            onClick={onResetGame}
+            className="flex items-center gap-1 text-[11px] bg-[#2A050B]/90 hover:bg-[#3D0811] text-[#FFDF78] border border-[#D4AF37]/40 px-2.5 py-1 rounded-lg transition"
+            title="Resetar jogadores e iniciar nova partida"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Nova Rodada / Limpar
+          </button>
+        )}
+      </div>
+
       {/* Banner de Rodada e Participantes Atuais */}
       <div className="bg-[#1F0307]/90 border border-[#D4AF37]/40 rounded-xl p-2.5 flex items-center justify-between text-xs font-sans">
         <div>
           <span className="text-[#FFDF78] font-bold block font-cinzel">
-            VEZ DE: {activeAuthor ? activeAuthor.name : 'Davi'}
+            VEZ DE: {activeAuthor ? activeAuthor.name : 'Jogador'}
           </span>
           <span className="text-[#F6EAD2]/80 text-[11px]">
-            Para: <strong className="text-[#FFDF78]">{activeTarget ? activeTarget.name : 'Mari'}</strong>{' '}
+            Para: <strong className="text-[#FFDF78]">{activeTarget ? activeTarget.name : 'Jogador'}</strong>{' '}
             {gameMode !== 'amigos' && activeTarget?.role && (
               <span className="text-[10px] bg-[#8A0E26] px-1.5 py-0.2 rounded text-white ml-1">
                 {activeTarget.role}
