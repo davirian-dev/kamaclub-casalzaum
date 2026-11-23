@@ -3,6 +3,8 @@ import { Challenge, Participant, GameMode } from '../types';
 import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2, SkipForward, ArrowDown, ShieldAlert, HeartHandshake, Dices } from 'lucide-react';
 import { audioPlayer } from '../utils/audio';
 import { DadosClimaView } from './DadosClimaView';
+import { GarrafaView } from './GarrafaView';
+import { EuNuncaView } from './EuNuncaView';
 import confetti from 'canvas-confetti';
 
 // Helper: retorna pronomes e artigos com base no gênero do participante
@@ -87,17 +89,10 @@ export const GameView: React.FC<GameViewProps> = ({
   const [activeTarget, setActiveTarget] = useState<Participant | null>(null);
   const [selectedSubGame, setSelectedSubGame] = useState<'verdade_desafio' | 'garrafa' | 'eu_nunca' | 'dados_clima'>('verdade_desafio');
   const [roundNumber, setRoundNumber] = useState(1);
-  const [bottleAngle, setBottleAngle] = useState(0);
-  const [isSpinningBottle, setIsSpinningBottle] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<number | 'todos'>('todos');
   const [isSpinningTurn, setIsSpinningTurn] = useState(false);
   const [chosenType, setChosenType] = useState<'verdade' | 'desafio' | null>(null);
   const [isSafePauseActive, setIsSafePauseActive] = useState(false);
-  const [bottleResult, setBottleResult] = useState<{
-    author: Participant;
-    target: Participant;
-    challenge: Challenge;
-  } | null>(null);
 
   // Calcula o nível incremental automático baseado na rodada atual
   // Rodadas 1-3: Nível 1 (Aquecimento)
@@ -290,50 +285,6 @@ export const GameView: React.FC<GameViewProps> = ({
     setCurrentIdx((prev) => prev + 1);
   };
 
-  // Girar a Garrafa e sortear ação/desafio real
-  const handleSpinBottle = () => {
-    if (isSpinningBottle || participants.length < 2) return;
-    setIsSpinningBottle(true);
-    setBottleResult(null);
-
-    const newTurns = Math.floor(Math.random() * 6) + 5; // 5 a 10 voltas
-    const randomAngle = Math.floor(Math.random() * 360);
-    const totalRotation = bottleAngle + newTurns * 360 + randomAngle;
-    setBottleAngle(totalRotation);
-
-    setTimeout(() => {
-      setIsSpinningBottle(false);
-
-      // Sorteia quem gira (fundo da garrafa) e quem recebe (gargalo)
-      const authorIdx = Math.floor(Math.random() * participants.length);
-      const author = participants[authorIdx];
-      const otherTargets = participants.filter((p) => p.id !== author.id);
-      const targetIdx = Math.floor(Math.random() * otherTargets.length);
-      const target = otherTargets[targetIdx] || author;
-
-      // Pega desafios do tipo garrafa ou desafio correspondentes ao modo
-      const bottleChallenges = challenges.filter(
-        (c) => c.mode === gameMode && (c.type === 'garrafa' || c.type === 'desafio')
-      );
-      const chosenChallenge =
-        bottleChallenges[Math.floor(Math.random() * bottleChallenges.length)] ||
-        currentChallenge;
-
-      setBottleResult({
-        author,
-        target,
-        challenge: chosenChallenge
-      });
-
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.6 },
-        colors: ['#D4AF37', '#FFDF78', '#8A0E26']
-      });
-    }, 2500);
-  };
-
   // Se não houver participantes cadastrados ou menos de 2 participantes, exibe tela de convite para cadastrar
   if (participants.length < 2) {
     return (
@@ -446,116 +397,31 @@ export const GameView: React.FC<GameViewProps> = ({
         />
       )}
 
-      {/* CASO 2: JOGO DA GARRAFA */}
+      {/* CASO 2: JOGO DA GARRAFA COM RODA REAL */}
       {selectedSubGame === 'garrafa' && (
-        <div className="card-pergaminho p-4 border border-[#D4AF37]/50 text-center">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🍾</span>
-              <h3 className="font-cinzel font-bold text-sm text-[#2E0B12]">
-                JOGO DA GARRAFA ({gameMode.toUpperCase()})
-              </h3>
-            </div>
-            <span className="text-[10px] text-[#6E3C2B]">Física Real de Giro</span>
-          </div>
-
-          {/* Área da Garrafa Giratória */}
-          <div className="relative w-44 h-44 mx-auto my-3 flex items-center justify-center">
-            {/* Rosa dos Ventos de Fundo */}
-            <div className="absolute inset-0 rounded-full border border-dashed border-[#D4AF37]/40 flex items-center justify-center">
-              <div className="w-full h-px bg-[#D4AF37]/20 absolute" />
-              <div className="h-full w-px bg-[#D4AF37]/20 absolute" />
-            </div>
-
-            {/* A Garrafa Dourada */}
-            <div
-              onClick={handleSpinBottle}
-              style={{
-                transform: `rotate(${bottleAngle}deg)`,
-                transition: isSpinningBottle ? 'transform 2.5s cubic-bezier(0.15, 0.9, 0.25, 1)' : 'none'
-              }}
-              className="w-12 h-36 cursor-pointer flex flex-col items-center justify-center z-10 filter drop-shadow-lg"
-            >
-              <div className="w-3 h-8 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 rounded-t-sm border border-amber-200" />
-              <div className="w-10 h-28 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-700 rounded-b-xl border border-amber-300 shadow-inner flex items-center justify-center">
-                <span className="text-[9px] font-cinzel font-bold text-black rotate-90">KAMA</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSpinBottle}
-            disabled={isSpinningBottle}
-            className="px-6 py-2.5 bg-gradient-to-r from-[#8A0E26] via-[#B5173B] to-[#8A0E26] text-white font-cinzel font-bold text-xs rounded-full shadow-lg hover:brightness-110 active:scale-95 transition disabled:opacity-50 border border-[#D4AF37]/50"
-          >
-            {isSpinningBottle ? 'Girando a Garrafa...' : '🍾 Toque para Girar a Garrafa'}
-          </button>
-
-          {/* Card de Resultado da Garrafa com Ação Real */}
-          {bottleResult && (
-            <div className="mt-4 p-4 bg-[#F5E8CE] border-2 border-[#D4AF37] rounded-xl text-left space-y-2.5 animate-fadeIn shadow-md">
-              <div className="flex items-center justify-between border-b border-[#D4AF37]/40 pb-1.5">
-                <span className="font-cinzel text-xs font-bold text-[#8A0E26] flex items-center gap-1">
-                  🎯 RESULTADO DO GIRO:
-                </span>
-                <span className="text-[10px] bg-[#8A0E26] text-white px-2 py-0.5 rounded-full font-bold">
-                  +{bottleResult.challenge.points} pts
-                </span>
-              </div>
-
-              <div className="text-xs text-[#2E0B12] font-sans space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-[#8A0E26]">Fundo da Garrafa (Quem Faz):</span>
-                  <strong className="text-[#2E0B12] bg-[#EEDBB7] px-2 py-0.5 rounded font-cinzel">
-                    {bottleResult.author.name}
-                  </strong>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-[#D4AF37]">Gargalo (Quem Recebe):</span>
-                  <strong className="text-[#2E0B12] bg-[#EEDBB7] px-2 py-0.5 rounded font-cinzel">
-                    {bottleResult.target.name}
-                  </strong>
-                </div>
-              </div>
-
-              <div className="bg-[#FAF4E6] p-3 rounded-lg border border-[#D4AF37]/30 my-2">
-                <span className="text-[10px] uppercase font-cinzel font-bold text-[#8A0E26] block mb-1">
-                  DESAFIO DA GARRAFA:
-                </span>
-                <p className="font-serif text-sm text-[#2E0B12] leading-relaxed italic font-medium">
-                  {injectNames(bottleResult.challenge.text, bottleResult.author, bottleResult.target)}
-                </p>
-              </div>
-
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => {
-                    onAddScore(bottleResult.challenge.points);
-                    setBottleResult(null);
-                    confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
-                  }}
-                  className="flex-1 py-2 bg-gradient-to-r from-[#D4AF37] to-[#AA8010] text-[#1F0307] font-cinzel font-bold text-xs rounded-lg shadow transition hover:brightness-110 flex items-center justify-center gap-1"
-                >
-                  <CheckCircle className="w-3.5 h-3.5" /> Cumpriram (+{bottleResult.challenge.points} pts)
-                </button>
-                <button
-                  onClick={() => setBottleResult(null)}
-                  className="px-3 py-2 bg-[#3D120B] text-[#F6EAD2] font-sans text-xs rounded-lg transition hover:bg-[#52190F]"
-                >
-                  Fechar
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <GarrafaView
+          participants={participants}
+          challenges={challenges}
+          gameMode={gameMode}
+          onAddScore={onAddScore}
+          onGoToSetup={onGoToSetup}
+        />
       )}
 
-      {/* CASO 3: VERDADE OU DESAFIO / EU NUNCA */}
-      {(selectedSubGame === 'verdade_desafio' || selectedSubGame === 'eu_nunca') && (
+      {/* CASO 3: EU NUNCA COM BOTÃO DE REINICIAR */}
+      {selectedSubGame === 'eu_nunca' && (
+        <EuNuncaView
+          challenges={challenges}
+          gameMode={gameMode}
+          onAddScore={onAddScore}
+        />
+      )}
+
+      {/* CASO 4: VERDADE OU DESAFIO */}
+      {selectedSubGame === 'verdade_desafio' && (
         <>
-          {/* Banner de Sorteio de Vez / Roleta de Nomes (somente no Verdade ou Desafio) */}
-          {selectedSubGame === 'verdade_desafio' && (
-            <div className="bg-[#1F0307]/95 border-2 border-[#D4AF37]/50 rounded-2xl p-3 shadow-lg space-y-2.5">
+          {/* Banner de Sorteio de Vez / Roleta de Nomes */}
+          <div className="bg-[#1F0307]/95 border-2 border-[#D4AF37]/50 rounded-2xl p-3 shadow-lg space-y-2.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="text-base">🎲</span>
@@ -593,42 +459,38 @@ export const GameView: React.FC<GameViewProps> = ({
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Escolha do Jogador: Verdade ou Desafio? (somente no modo verdade_desafio) */}
-          {selectedSubGame === 'verdade_desafio' && (
-            <div className="card-pergaminho p-3 border border-[#D4AF37]/50 text-center space-y-2">
-              <span className="text-[11px] font-cinzel font-bold text-[#8A0E26] block">
-                {activeTarget ? activeTarget.name : 'Jogador'}, VOCÊ ESCOLHE:
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => { setChosenType('verdade'); setCurrentIdx((prev) => prev + 1); }}
-                  className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
-                    chosenType === 'verdade'
-                      ? 'bg-[#184824] text-white border-emerald-400 shadow-md scale-102'
-                      : 'bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50'
-                  }`}
-                >
-                  😇 VERDADE
-                </button>
-                <button
-                  onClick={() => { setChosenType('desafio'); setCurrentIdx((prev) => prev + 1); }}
-                  className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
-                    chosenType === 'desafio'
-                      ? 'bg-[#8A0E26] text-white border-rose-400 shadow-md scale-102'
-                      : 'bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50'
-                  }`}
-                >
-                  🔥 DESAFIO
-                </button>
-              </div>
+          {/* Escolha do Jogador: Verdade ou Desafio? */}
+          <div className="card-pergaminho p-3 border border-[#D4AF37]/50 text-center space-y-2">
+            <span className="text-[11px] font-cinzel font-bold text-[#8A0E26] block">
+              {activeTarget ? activeTarget.name : 'Jogador'}, VOCÊ ESCOLHE:
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => { setChosenType('verdade'); setCurrentIdx((prev) => prev + 1); }}
+                className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
+                  chosenType === 'verdade'
+                    ? 'bg-[#184824] text-white border-emerald-400 shadow-md scale-102'
+                    : 'bg-[#FCF8EE] text-[#184824] border-emerald-700/40 hover:bg-emerald-50'
+                }`}
+              >
+                😇 VERDADE
+              </button>
+              <button
+                onClick={() => { setChosenType('desafio'); setCurrentIdx((prev) => prev + 1); }}
+                className={`py-2 px-3 rounded-xl font-cinzel font-bold text-xs transition border ${
+                  chosenType === 'desafio'
+                    ? 'bg-[#8A0E26] text-white border-rose-400 shadow-md scale-102'
+                    : 'bg-[#FCF8EE] text-[#8A0E26] border-rose-700/40 hover:bg-rose-50'
+                }`}
+              >
+                🔥 DESAFIO
+              </button>
             </div>
-          )}
+          </div>
 
-          {/* Seletor de Nível (somente no Verdade ou Desafio) */}
-          {selectedSubGame === 'verdade_desafio' && (
-            <div className="bg-[#1C0307] p-2 rounded-xl border border-[#D4AF37]/30 flex items-center justify-between gap-1 text-[11px] font-cinzel">
+          {/* Seletor de Nível */}
+          <div className="bg-[#1C0307] p-2 rounded-xl border border-[#D4AF37]/30 flex items-center justify-between gap-1 text-[11px] font-cinzel">
               <span className="text-[#D4AF37] font-bold text-[10px] px-1">NÍVEL:</span>
               <div className="flex gap-1 flex-1 justify-end">
                 <button
@@ -673,7 +535,6 @@ export const GameView: React.FC<GameViewProps> = ({
                 </button>
               </div>
             </div>
-          )}
 
           {/* Card Pergaminho do Desafio / Eu Nunca */}
           <div className="card-pergaminho p-5 border-2 border-[#D4AF37]/60 text-center relative overflow-hidden">

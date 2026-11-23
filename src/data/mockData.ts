@@ -814,6 +814,60 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Quem já fez, bebe 1 gole!'
   },
   {
+    id: 'amigo-en-3',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca fingi que não vi um conhecido na rua para evitar puxar papo.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'amigo-en-4',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca mandei mensagem embriagado(a) e me arrependi no segundo que acordei.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'amigo-en-5',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca saí de um rolê de fininho sem me despedir de ninguém.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'amigo-en-6',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca passei vergonha tentando dançar ou sensualizar na frente do crush.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'amigo-en-7',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca comi comida que caiu no chão usando a desculpa da regra dos 5 segundos.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'amigo-en-8',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca dei uma desculpa esfarrapada de última hora só para ficar em casa na cama.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
     id: 'amigo-g-1',
     type: 'garrafa',
     mode: 'amigos',
@@ -931,6 +985,60 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     text: 'Eu nunca mandei nudes ou fotos ousadas que me deram medo de vazar depois.',
     points: 35,
     refusalOption: 'Quem já fez, bebe 1 shot!'
+  },
+  {
+    id: 'esquenta-en-3',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca beijei mais de 3 pessoas diferentes em uma mesma festa ou balada.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'esquenta-en-4',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca transei dentro de um carro ou em estacionamento.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'esquenta-en-5',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca fiz sexting picante ou chamei no sigilo no meio do horário de trabalho.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 shot!'
+  },
+  {
+    id: 'esquenta-en-6',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca usei vendas nos olhos ou gel com efeito térmico durante as preliminares.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'esquenta-en-7',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca dei um beijo triplo ou flertei intensamente a três.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 shot!'
+  },
+  {
+    id: 'esquenta-en-8',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca tive uma amizade colorida onde prometemos não apegar e deu confusão.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
   },
   {
     id: 'esquenta-g-1',
@@ -1052,6 +1160,60 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     text: 'Eu nunca usei brinquedos eróticos ou fantasias ousadas em uma transa.',
     points: 50,
     refusalOption: 'Quem já usou, bebe 1 gole e dá um detalhe!'
+  },
+  {
+    id: 'kama-en-3',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca participei de um ménage a três ou orgia com múltiplas pessoas.',
+    points: 50,
+    refusalOption: 'Quem já participou, bebe 2 goles!'
+  },
+  {
+    id: 'kama-en-4',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca filmei ou tirei fotos picantes explícitas de uma transa com consentimento.',
+    points: 50,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'kama-en-5',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca transei dentro da água (piscina, mar, banheira de hidromassagem ou cachoeira).',
+    points: 50,
+    refusalOption: 'Quem já fez, bebe 1 shot!'
+  },
+  {
+    id: 'kama-en-6',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca experimentei fetiches intensos como amarras, tapas consentidos ou submissão.',
+    points: 50,
+    refusalOption: 'Quem já experimentou, bebe 1 gole!'
+  },
+  {
+    id: 'kama-en-7',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca transei na frente de um espelho grande admirando a cena.',
+    points: 50,
+    refusalOption: 'Quem já fez, bebe 1 shot!'
+  },
+  {
+    id: 'kama-en-8',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca fingi um orgasmo para acabar a transa mais rápido.',
+    points: 50,
+    refusalOption: 'Quem já fingiu, bebe e confessa sem mentir!'
   },
   {
     id: 'kama-g-1',
