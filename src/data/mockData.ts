@@ -34,7 +34,7 @@ export const INITIAL_POSITIONS: Position[] = [
     location: 'Cama',
     focus: 'Estímulo Oral Simultâneo',
     rating: 5,
-    illustrationUrl: '/assets/logo-crest.jpg',
+    illustrationUrl: '/assets/pos-69.webp',
     description: 'O clássico mais desejado. Permite que ambos deem e recebam estímulo ao mesmo tempo, sem disputa de atenção.',
     instructions: [
       'Um deita de costas com a cabeça virada para os pés do outro.',
@@ -57,7 +57,7 @@ export const INITIAL_POSITIONS: Position[] = [
     location: 'Chão / Tapete',
     focus: 'Conexão Espiritual & Respiração',
     rating: 5,
-    illustrationUrl: '/assets/pos-abraco-sol.jpg',
+    illustrationUrl: '/assets/pos-lotus.webp',
     description: 'Inspirada nas práticas tântricas orientais, essa posição estimula a troca de energia e o prazer lento e prolongado.',
     instructions: [
       'O parceiro base senta-se de pernas cruzadas (posição de lótus).',
@@ -71,8 +71,30 @@ export const INITIAL_POSITIONS: Position[] = [
     isVip: false
   },
   {
-    id: 'vaqueira-imperial',
-    title: 'Vaqueira Imperial',
+    id: 'avanco-lunges',
+    title: 'Avanço Dinâmico (Lunges)',
+    subtitle: 'Apoio firme e penetração em ângulo profundo',
+    category: 'profundidade',
+    complexity: 'Intermediário',
+    intensity: 'Alta',
+    location: 'Cama',
+    focus: 'Ponto G & Estímulo Profundo',
+    rating: 5,
+    illustrationUrl: '/assets/pos-avanco.webp',
+    description: 'O parceiro que recebe apoia uma perna dobrada para a frente, permitindo grande mobilidade e encaixe perfeito.',
+    instructions: [
+      'O parceiro de baixo deita de costas com pernas abertas.',
+      'O parceiro de cima encaixa com uma perna flexionada de lado para apoio de peso.',
+      'Ritmo lento com fricção constante maximiza as sensações.'
+    ],
+    comfortTip: 'Apoie uma das mãos no colchão para dividir o esforço das coxas.',
+    activeTip: 'Controle o ângulo de inclinação do tronco para variar entre estímulo na parede anterior ou posterior.',
+    passiveTip: 'Flexione os joelhos levemente para relaxar a pélvis.',
+    isVip: false
+  },
+  {
+    id: 'amazona-controle',
+    title: 'Amazona Imperial',
     subtitle: 'Ela no comando absoluto do ritmo e ângulo',
     category: 'controle',
     complexity: 'Iniciante',
@@ -80,16 +102,82 @@ export const INITIAL_POSITIONS: Position[] = [
     location: 'Cama',
     focus: 'Estímulo Clitoriano & Ponto G',
     rating: 5,
-    illustrationUrl: '/assets/pos-abraco-sol.jpg',
+    illustrationUrl: '/assets/pos-amazona.webp',
     description: 'Ideal para quem gosta de ditar a velocidade, controlar a profundidade e escolher o ângulo exato de prazer.',
     instructions: [
       'O parceiro deita-se relaxado de costas.',
-      'A pessoa por cima monta voltada para a frente, apoiando os pés ou joelhos no colchão.',
-      'Movimentos de fricção para frente e para trás costumam dar mais prazer do que movimentos verticais.'
+      'A pessoa por cima senta-se ereta, apoiando os joelhos ao lado do corpo do parceiro.',
+      'Movimentos circulares de quadril geram estímulo duplo sem fadiga.'
     ],
-    comfortTip: 'Quem está embaixo pode colocar as mãos nas coxas da parceira para ajudar na sustentação nos momentos rápidos.',
+    comfortTip: 'Quem está embaixo pode colocar as mãos nos quadris para ajudar a dar segurança.',
     activeTip: 'Aproveite o controle total para encontrar o ponto mais sensível sem pressa.',
     passiveTip: 'Mantenha as mãos livres para acariciar os seios, cintura e rosto da parceira.',
+    isVip: false
+  },
+  {
+    id: 'arco-triunfal',
+    title: 'Arco do Triunfo',
+    subtitle: 'Roma não foi construída em um dia: flexibilidade e entrega',
+    category: 'acrobaticas',
+    complexity: 'Avançado',
+    intensity: 'Intensa',
+    location: 'Cama',
+    focus: 'Curvatura Lombar & Sensação Intensa',
+    rating: 5,
+    illustrationUrl: '/assets/pos-arco.webp',
+    description: 'Uma postura exuberante onde o quadril se eleva em arco, criando um ângulo íngreme de prazer e estética arrebatadora.',
+    instructions: [
+      'Quem recebe apoia as costas na cama e eleva o quadril contraindo levemente os glúteos.',
+      'O parceiro ativo ajoelha-se entre as pernas e mantém firmeza nos ombros ou cintura.',
+      'Movimentos firmes com pausas para contato visual intensificam o clímax.'
+    ],
+    comfortTip: 'Empilhem dois travesseiros sob a lombar para sustentar o arco sem sobrecarregar a musculatura.',
+    activeTip: 'Mantenha o peso nos joelhos e guie os quadris para cima com as mãos.',
+    passiveTip: 'Respire pausadamente e desfrute da sensação de expansão pélvica.',
+    isVip: false
+  },
+  {
+    id: 'bailarina-em-pe',
+    title: 'Bailarina em Pé',
+    subtitle: 'Se sentir dormência, basta trocar a perna de apoio',
+    category: 'acrobaticas',
+    complexity: 'Acrobático',
+    intensity: 'Intensa',
+    location: 'Em Pé',
+    focus: 'Adrenalina, Paixão & Contato em Pé',
+    rating: 5,
+    illustrationUrl: '/assets/pos-bailarina.webp',
+    description: 'Perfeita para momentos de desejo impulsivo na parede, no corredor ou no chuveiro.',
+    instructions: [
+      'Ambos ficam de pé; um parceiro eleva uma das pernas envolvendo a cintura do outro.',
+      'O parceiro base sustenta a perna elevada com uma das mãos e abraça as costas com a outra.',
+      'Apoiar as costas em uma parede firme garante equilíbrio absoluto.'
+    ],
+    comfortTip: 'Usem a parede ou o batente da porta como ponto fixo de sustentação.',
+    activeTip: 'Mantenha os joelhos levemente destravados para não forçar as articulações.',
+    passiveTip: 'Abrace firme o pescoço e deixe a perna de apoio firme no chão.',
+    isVip: false
+  },
+  {
+    id: 'cachorrinho-sentado',
+    title: 'Cachorrinho Acolhedor',
+    subtitle: 'O preferido com mais conforto e proximidade',
+    category: 'classicas',
+    complexity: 'Iniciante',
+    intensity: 'Média',
+    location: 'Cama',
+    focus: 'Penetração Traseira & Carícias nas Costas',
+    rating: 5,
+    illustrationUrl: '/assets/pos-cachorrinho.webp',
+    description: 'A clássica posição por trás adaptada para um encaixe mais relaxado, permitindo puxões de cabelo suaves e beijos na nuca.',
+    instructions: [
+      'Quem recebe fica de quatro na cama com cotovelos apoiados no colchão para descansar os punhos.',
+      'O parceiro ativo posiciona-se por trás de joelhos, segurando firme nos quadris.',
+      'A mão livre pode ser usada para estimular o clitóris ou os mamilos simultaneamente.'
+    ],
+    comfortTip: 'Coloquem um travesseiro sob o peito para descansar o pescoço e ombros.',
+    activeTip: 'Ajuste a altura da bacia para garantir conforto muscular ao parceiro.',
+    passiveTip: 'Arqueie a lombar suavemente para facilitar o ritmo.',
     isVip: false
   },
   {
@@ -102,7 +190,7 @@ export const INITIAL_POSITIONS: Position[] = [
     location: 'Cama',
     focus: 'Prazer Compartilhado sem Ninguém de Fora',
     rating: 5,
-    illustrationUrl: '/assets/logo-crest.jpg',
+    illustrationUrl: '/assets/pos-69.webp',
     description: 'Especial para dinâmicas a três (HMM ou MHF), garantindo que todos os participantes estejam conectados visual e fisicamente.',
     instructions: [
       'A pessoa central fica deitada ou semi-sentada apoiada em travesseiros.',
@@ -185,7 +273,7 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     type: 'desafio',
     mode: 'esquenta',
     level: 2,
-    text: 'Vende os olhos do seu par e sussurre no ouvido dele 3 coisas que mais te atraem no corpo dele, seguido de um beijo de 15 segundos no pescoço.',
+    text: 'Vende os olhos de Pessoa B e sussurre no ouvido dela 3 coisas que mais te atraem no corpo dela, seguido de um beijo de 15 segundos no pescoço.',
     timeSeconds: 15,
     points: 50,
     refusalOption: 'Beber 1 gole ou tirar 1 peça de roupa leve'
@@ -216,7 +304,7 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     type: 'desafio',
     mode: 'kama',
     level: 3,
-    text: 'Escolha uma posição do catálogo (ex: O Abraço do Sol) e pratique por 2 minutos ininterruptos mantendo contato visual.',
+    text: 'Escolham uma posição do catálogo (ex: O Abraço do Sol) e pratiquem por 2 minutos ininterruptos mantendo contato visual.',
     timeSeconds: 120,
     points: 100,
     refusalOption: 'Beber 2 shots e ceder a vez de escolher o próximo desafio'
