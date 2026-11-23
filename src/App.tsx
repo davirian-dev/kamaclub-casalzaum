@@ -206,6 +206,8 @@ export const App: React.FC = () => {
       localStorage.setItem('kama_score', '0');
       setCoringas(3);
       localStorage.setItem('kama_coringas', '3');
+      setDonePositionIds([]);
+      localStorage.removeItem('kama_done_positions');
       setCurrentTab('roda');
     }
   };
