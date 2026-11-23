@@ -15,7 +15,7 @@ import {
   INITIAL_IDEAS
 } from './data/mockData';
 import { Participant, GameMode, IdeaCard } from './types';
-import { ShieldCheck, ExternalLink, Heart, Sparkles, MessageSquare } from 'lucide-react';
+import { ShieldCheck, ExternalLink, Heart, Sparkles, MessageSquare, Download } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabType>('jogar');
@@ -27,6 +27,30 @@ export const App: React.FC = () => {
   const [isVip, setIsVip] = useState(() => localStorage.getItem('kama_vip') === 'true');
   const [score, setScore] = useState(() => Number(localStorage.getItem('kama_score')) || 120);
   const [coringas, setCoringas] = useState(() => Number(localStorage.getItem('kama_coringas')) || 3);
+
+  // Instalação PWA
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBanner(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   // Participantes da Roda
   const [participants, setParticipants] = useState<Participant[]>(() => {
@@ -241,128 +265,156 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="bg-damasco min-h-screen text-[#F6EAD2] flex flex-col max-w-md mx-auto relative shadow-2xl border-x border-[#D4AF37]/20">
-      {/* Header Fixo com Áudio, Pânico, PIN e VIP */}
-      <Header
-        isPlayingAudio={isPlayingAudio}
-        onToggleAudio={handleToggleAudio}
-        onPanicMode={handlePanicMode}
-        onOpenPinModal={() => setIsPinModalOpen(true)}
-        onOpenVipModal={() => setIsVipModalOpen(true)}
-        isVip={isVip}
-        score={score}
-        coringas={coringas}
-      />
-
-      {/* Conteúdo Principal por Aba */}
-      <main className="flex-1 p-3.5 overflow-y-auto">
-        {currentTab === 'jogar' && (
-          <GameView
-            challenges={INITIAL_CHALLENGES}
-            participants={participants}
-            gameMode={gameMode}
-            onAddScore={handleAddScore}
-            onUseCoringa={handleUseCoringa}
-            score={score}
-            coringas={coringas}
-          />
-        )}
-
-        {currentTab === 'posicoes' && (
-          <PositionsView
-            positions={INITIAL_POSITIONS}
-            doneIds={donePositionIds}
-            favoriteIds={favoritePositionIds}
-            todoIds={todoPositionIds}
-            onToggleDone={handleToggleDone}
-            onToggleFavorite={handleToggleFavorite}
-            onToggleTodo={handleToggleTodo}
-            hideLgbt={hideLgbt}
-            isVip={isVip}
-            onOpenVipModal={() => setIsVipModalOpen(true)}
-          />
-        )}
-
-        {currentTab === 'roda' && (
-          <RodaSetup
-            participants={participants}
-            gameMode={gameMode}
-            onUpdateParticipants={setParticipants}
-            onChangeGameMode={setGameMode}
-            hideLgbt={hideLgbt}
-            onToggleHideLgbt={setHideLgbt}
-          />
-        )}
-
-        {currentTab === 'lugares' && (
-          <LugaresIdeiasView
-            places={places}
-            ideas={ideas}
-            onTogglePlaceItem={handleTogglePlaceItem}
-            onAddCustomIdea={handleAddCustomIdea}
-          />
-        )}
-
-        {currentTab === 'clube' && (
-          <div className="space-y-4 pb-20 text-center">
-            <div className="card-pergaminho p-5 border border-[#D4AF37]/60 space-y-3">
-              <img
-                src="/assets/logo-crest.jpg"
-                alt="Clube do Casalzão"
-                className="w-20 h-20 rounded-full mx-auto border-2 border-[#D4AF37] object-cover shadow-lg"
-              />
-              <h2 className="font-cinzel text-lg font-bold text-[#2E0B12]">
-                ECOSSISTEMA CLUBE DO CASALZÃO
-              </h2>
-              <p className="text-xs text-[#5C2B1D] font-serif leading-relaxed">
-                Bem-vindo ao espaço oficial do Davi e Mari. Aqui você encontra novidades exclusivas, bastidores, nossa comunidade e atualizações do Kama & Desafios.
-              </p>
-
-              <div className="space-y-2 pt-2">
-                <a
-                  href="https://clubcasalzaum.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-[#8A0E26] hover:bg-[#A31230] text-white rounded-xl text-xs font-cinzel font-bold flex items-center justify-center gap-1.5 transition shadow"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> Acessar Landing Page Oficial
-                </a>
-
-                <a
-                  href="https://casalzaumofcvip.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 text-black rounded-xl text-xs font-cinzel font-bold flex items-center justify-center gap-1.5 transition shadow"
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> Área VIP & Conteúdos Sem Censura
-                </a>
-              </div>
+    <div className="min-h-screen bg-[#110103] flex justify-center items-center sm:py-6">
+      {/* Contêiner Mobile First: No celular ocupa 100% da tela com safe areas; no PC vira um smartphone centralizado elegante */}
+      <div className="w-full sm:max-w-md min-h-screen sm:min-h-[844px] sm:max-h-[92vh] bg-damasco text-[#F6EAD2] flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.9)] sm:rounded-[36px] sm:border-[5px] sm:border-[#380710] overflow-hidden">
+        
+        {/* Banner de Instalação PWA no Celular */}
+        {showInstallBanner && (
+          <div className="bg-gradient-to-r from-amber-600 to-yellow-500 text-black px-3 py-1.5 flex items-center justify-between text-xs font-bold z-50 shadow-md">
+            <div className="flex items-center gap-1.5">
+              <Download className="w-4 h-4" />
+              <span>Instalar Kama & Desafios no Celular?</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleInstallClick}
+                className="bg-black text-white px-2 py-0.5 rounded text-[10px] font-cinzel"
+              >
+                Instalar
+              </button>
+              <button
+                onClick={() => setShowInstallBanner(false)}
+                className="text-black/70 font-bold"
+              >
+                ✕
+              </button>
             </div>
           </div>
         )}
-      </main>
 
-      {/* Navegação Inferior Fixa */}
-      <BottomNav currentTab={currentTab} onChangeTab={setCurrentTab} />
+        {/* Header Fixo */}
+        <Header
+          isPlayingAudio={isPlayingAudio}
+          onToggleAudio={handleToggleAudio}
+          onPanicMode={handlePanicMode}
+          onOpenPinModal={() => setIsPinModalOpen(true)}
+          onOpenVipModal={() => setIsVipModalOpen(true)}
+          isVip={isVip}
+          score={score}
+          coringas={coringas}
+        />
 
-      {/* Modais Globais */}
-      <ClubeVipModal
-        isOpen={isVipModalOpen}
-        onClose={() => setIsVipModalOpen(false)}
-        isVip={isVip}
-        onActivateVip={handleActivateVip}
-      />
+        {/* Conteúdo Principal por Aba com Scroll Suave */}
+        <main className="flex-1 p-3.5 pb-24 overflow-y-auto overscroll-contain">
+          {currentTab === 'jogar' && (
+            <GameView
+              challenges={INITIAL_CHALLENGES}
+              participants={participants}
+              gameMode={gameMode}
+              onAddScore={handleAddScore}
+              onUseCoringa={handleUseCoringa}
+              score={score}
+              coringas={coringas}
+            />
+          )}
 
-      <PinModal
-        isOpen={isPinModalOpen}
-        onClose={() => setIsPinModalOpen(false)}
-        currentPin={currentPin}
-        onSavePin={(pin) => {
-          setCurrentPin(pin);
-          localStorage.setItem('kama_pin', pin);
-        }}
-        onUnlockSuccess={() => {}}
-      />
+          {currentTab === 'posicoes' && (
+            <PositionsView
+              positions={INITIAL_POSITIONS}
+              doneIds={donePositionIds}
+              favoriteIds={favoritePositionIds}
+              todoIds={todoPositionIds}
+              onToggleDone={handleToggleDone}
+              onToggleFavorite={handleToggleFavorite}
+              onToggleTodo={handleToggleTodo}
+              hideLgbt={hideLgbt}
+              isVip={isVip}
+              onOpenVipModal={() => setIsVipModalOpen(true)}
+            />
+          )}
+
+          {currentTab === 'roda' && (
+            <RodaSetup
+              participants={participants}
+              gameMode={gameMode}
+              onUpdateParticipants={setParticipants}
+              onChangeGameMode={setGameMode}
+              hideLgbt={hideLgbt}
+              onToggleHideLgbt={setHideLgbt}
+            />
+          )}
+
+          {currentTab === 'lugares' && (
+            <LugaresIdeiasView
+              places={places}
+              ideas={ideas}
+              onTogglePlaceItem={handleTogglePlaceItem}
+              onAddCustomIdea={handleAddCustomIdea}
+            />
+          )}
+
+          {currentTab === 'clube' && (
+            <div className="space-y-4 pb-20 text-center">
+              <div className="card-pergaminho p-5 border border-[#D4AF37]/60 space-y-3">
+                <img
+                  src="/assets/logo-crest.jpg"
+                  alt="Clube do Casalzão"
+                  className="w-20 h-20 rounded-full mx-auto border-2 border-[#D4AF37] object-cover shadow-lg"
+                />
+                <h2 className="font-cinzel text-lg font-bold text-[#2E0B12]">
+                  ECOSSISTEMA CLUBE DO CASALZÃO
+                </h2>
+                <p className="text-xs text-[#5C2B1D] font-serif leading-relaxed">
+                  Bem-vindo ao espaço oficial do Davi e Mari. Aqui você encontra novidades exclusivas, bastidores, nossa comunidade e atualizações do Kama & Desafios.
+                </p>
+
+                <div className="space-y-2 pt-2">
+                  <a
+                    href="https://clubcasalzaum.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 bg-[#8A0E26] hover:bg-[#A31230] text-white rounded-xl text-xs font-cinzel font-bold flex items-center justify-center gap-1.5 transition shadow"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Acessar Landing Page Oficial
+                  </a>
+
+                  <a
+                    href="https://casalzaumofcvip.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 text-black rounded-xl text-xs font-cinzel font-bold flex items-center justify-center gap-1.5 transition shadow"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Área VIP & Conteúdos Sem Censura
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Navegação Inferior Fixa */}
+        <BottomNav currentTab={currentTab} onChangeTab={setCurrentTab} />
+
+        {/* Modais Globais */}
+        <ClubeVipModal
+          isOpen={isVipModalOpen}
+          onClose={() => setIsVipModalOpen(false)}
+          isVip={isVip}
+          onActivateVip={handleActivateVip}
+        />
+
+        <PinModal
+          isOpen={isPinModalOpen}
+          onClose={() => setIsPinModalOpen(false)}
+          currentPin={currentPin}
+          onSavePin={(pin) => {
+            setCurrentPin(pin);
+            localStorage.setItem('kama_pin', pin);
+          }}
+          onUnlockSuccess={() => {}}
+        />
+      </div>
     </div>
   );
 };

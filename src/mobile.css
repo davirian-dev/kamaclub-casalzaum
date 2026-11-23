@@ -1,0 +1,37 @@
+/* Safe Area Insets para Celulares (iPhone com Notch/Dynamic Island e Android com barra de gestos) */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* Evitar efeito de zoom acidental ao tocar duas vezes no celular */
+* {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Bloqueia rolagem elástica e bordas cinzas nativas do iOS Safari */
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.safe-top {
+  padding-top: max(8px, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* Scroll suave sem barra de rolagem grossa no celular */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+}
