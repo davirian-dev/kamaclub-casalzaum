@@ -736,9 +736,12 @@ export const INITIAL_POSITIONS: Position[] = [
 ];
 
 export const INITIAL_CHALLENGES: Challenge[] = [
+  // ==========================================
   // MODO AMIGOS (LEVE / RESENHA / ZERO EXPLÍCITO)
+  // ==========================================
+  // NÍVEL 1 (Amigos)
   {
-    id: 'amigo-1',
+    id: 'amigo-v-1',
     type: 'verdade',
     mode: 'amigos',
     level: 1,
@@ -747,7 +750,25 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Beber 1 gole ou pagar prenda'
   },
   {
-    id: 'amigo-2',
+    id: 'amigo-v-2',
+    type: 'verdade',
+    mode: 'amigos',
+    level: 1,
+    text: 'Se você pudesse apagar um relacionamento ou ficada do seu passado, qual seria?',
+    points: 20,
+    refusalOption: 'Beber 1 gole'
+  },
+  {
+    id: 'amigo-v-3',
+    type: 'verdade',
+    mode: 'amigos',
+    level: 1,
+    text: 'Qual é a mania mais estranha que você tem quando está sozinho em casa?',
+    points: 20,
+    refusalOption: 'Beber 1 gole'
+  },
+  {
+    id: 'amigo-d-1',
     type: 'desafio',
     mode: 'amigos',
     level: 1,
@@ -757,7 +778,25 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Cantar o refrão de uma música brega bem alto'
   },
   {
-    id: 'amigo-3',
+    id: 'amigo-d-2',
+    type: 'desafio',
+    mode: 'amigos',
+    level: 1,
+    text: 'Deixe Pessoa B mandar um emoji aleatório no direct de qualquer contato recente do seu WhatsApp!',
+    points: 35,
+    refusalOption: 'Pagar 15 polichinelos'
+  },
+  {
+    id: 'amigo-d-3',
+    type: 'desafio',
+    mode: 'amigos',
+    level: 1,
+    text: 'Fale com sotaque de outra região ou país pelas próximas duas rodadas sem rir!',
+    points: 25,
+    refusalOption: 'Beber 1 gole'
+  },
+  {
+    id: 'amigo-en-1',
     type: 'eu_nunca',
     mode: 'amigos',
     level: 1,
@@ -766,55 +805,135 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Quem já fez, bebe 1 gole!'
   },
   {
-    id: 'amigo-4',
+    id: 'amigo-en-2',
+    type: 'eu_nunca',
+    mode: 'amigos',
+    level: 1,
+    text: 'Eu nunca fingi que estava dormindo ou ocupado para não atender uma ligação chata.',
+    points: 15,
+    refusalOption: 'Quem já fez, bebe 1 gole!'
+  },
+  {
+    id: 'amigo-g-1',
     type: 'garrafa',
     mode: 'amigos',
     level: 1,
-    text: 'O sorteado do fundo da garrafa deve contar uma fofoca inofensiva sobre o sorteado do gargalo!',
+    text: 'A pessoa do fundo da garrafa deve contar uma fofoca inofensiva e divertida sobre a pessoa do gargalo!',
     points: 25,
     refusalOption: 'Tomar 1 shot de água ou drink'
   },
   {
-    id: 'amigo-5',
-    type: 'verdade',
+    id: 'amigo-g-2',
+    type: 'garrafa',
     mode: 'amigos',
     level: 1,
-    text: 'Se você pudesse apagar um relacionamento do seu passado, qual seria?',
-    points: 20,
-    refusalOption: 'Beber 1 gole de bebida'
-  },
-  {
-    id: 'amigo-6',
-    type: 'desafio',
-    mode: 'amigos',
-    level: 1,
-    text: 'Deixe a pessoa do seu lado mandar um emoji aleatório no direct de qualquer contato do seu WhatsApp!',
-    points: 35,
-    refusalOption: 'Pagar 15 polichinelos'
+    text: 'A pessoa da ponta da garrafa deve dar um abraço de urso de 20 segundos na pessoa da base!',
+    timeSeconds: 20,
+    points: 25,
+    refusalOption: 'Pagar prenda'
   },
 
+  // ==========================================
   // MODO ESQUENTA (TOQUES / BEIJOS / PRELIMINARES)
+  // ==========================================
+  // NÍVEL 1 (Esquenta Inicial)
   {
-    id: 'esquenta-1',
+    id: 'esquenta-v-1',
+    type: 'verdade',
+    mode: 'esquenta',
+    level: 1,
+    text: 'Qual foi o primeiro pensamento que você teve sobre Pessoa B quando a conheceu?',
+    points: 30,
+    refusalOption: 'Beber 1 gole'
+  },
+  {
+    id: 'esquenta-v-2',
+    type: 'verdade',
+    mode: 'esquenta',
+    level: 1,
+    text: 'Qual parte do corpo de Pessoa B você acha mais irresistível e por quê?',
+    points: 35,
+    refusalOption: 'Beber 1 shot'
+  },
+  {
+    id: 'esquenta-d-1',
+    type: 'desafio',
+    mode: 'esquenta',
+    level: 1,
+    text: 'Olhe fixamente nos olhos de Pessoa B a apenas 10 centímetros de distância por 30 segundos sem desviar o olhar nem rir.',
+    timeSeconds: 30,
+    points: 40,
+    refusalOption: 'Beber 1 gole'
+  },
+  {
+    id: 'esquenta-d-2',
+    type: 'desafio',
+    mode: 'esquenta',
+    level: 1,
+    text: 'Passe a ponta dos dedos suavemente pelos lábios de Pessoa B enquanto descreve o que está sentindo.',
+    timeSeconds: 20,
+    points: 40,
+    refusalOption: 'Pagar prenda'
+  },
+
+  // NÍVEL 2 (Esquenta Intermediário)
+  {
+    id: 'esquenta-v-3',
+    type: 'verdade',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Qual é a fantasia secreta que você mais tem vontade de realizar com Pessoa B?',
+    points: 45,
+    refusalOption: 'Beber 1 shot'
+  },
+  {
+    id: 'esquenta-v-4',
+    type: 'verdade',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Conte um fetiche ou desejo que você nunca teve coragem de confessar em voz alta.',
+    points: 50,
+    refusalOption: 'Beber 2 goles'
+  },
+  {
+    id: 'esquenta-d-3',
     type: 'desafio',
     mode: 'esquenta',
     level: 2,
     text: 'Vende os olhos de Pessoa B e sussurre no ouvido dela 3 coisas que mais te atraem no corpo dela, seguido de um beijo de 15 segundos no pescoço.',
     timeSeconds: 15,
-    points: 50,
+    points: 55,
     refusalOption: 'Beber 1 gole ou tirar 1 peça de roupa leve'
   },
   {
-    id: 'esquenta-2',
-    type: 'verdade',
+    id: 'esquenta-d-4',
+    type: 'desafio',
     mode: 'esquenta',
     level: 2,
-    text: 'Qual é a fantasia secreta que você mais tem vontade de realizar com a pessoa da sua frente?',
-    points: 40,
-    refusalOption: 'Beber 1 shot de drink'
+    text: 'Tire uma peça de roupa de Pessoa B usando apenas os dentes!',
+    points: 55,
+    refusalOption: 'Beber 2 goles seguidos'
   },
   {
-    id: 'esquenta-3',
+    id: 'esquenta-en-1',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca tive um sonho erótico intenso com alguém que está nesta roda hoje.',
+    points: 35,
+    refusalOption: 'Quem já teve, dá um gole e dá um sorriso sem falar nada!'
+  },
+  {
+    id: 'esquenta-en-2',
+    type: 'eu_nunca',
+    mode: 'esquenta',
+    level: 2,
+    text: 'Eu nunca mandei nudes ou fotos ousadas que me deram medo de vazar depois.',
+    points: 35,
+    refusalOption: 'Quem já fez, bebe 1 shot!'
+  },
+  {
+    id: 'esquenta-g-1',
     type: 'garrafa',
     mode: 'esquenta',
     level: 2,
@@ -824,25 +943,7 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Fazer 10 agachamentos sem camisa'
   },
   {
-    id: 'esquenta-4',
-    type: 'desafio',
-    mode: 'esquenta',
-    level: 2,
-    text: 'Tire uma peça de roupa da Pessoa B usando apenas os dentes!',
-    points: 55,
-    refusalOption: 'Beber 2 goles seguidos'
-  },
-  {
-    id: 'esquenta-5',
-    type: 'eu_nunca',
-    mode: 'esquenta',
-    level: 2,
-    text: 'Eu nunca tive um sonho erótico intenso com alguém que está nesta roda hoje.',
-    points: 35,
-    refusalOption: 'Quem já teve, dá um gole e dá um sorriso sem falar nada!'
-  },
-  {
-    id: 'esquenta-6',
+    id: 'esquenta-g-2',
     type: 'garrafa',
     mode: 'esquenta',
     level: 2,
@@ -852,47 +953,90 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Ambos tomam 1 shot'
   },
 
-  // MODO KAMA (+18 / SEM TABU)
+  // ==========================================
+  // MODO KAMA (+18 / SEM TABU / EXPLÍCITO)
+  // ==========================================
+  // NÍVEL 2 (Kama Aquecimento)
   {
-    id: 'kama-1',
-    type: 'desafio',
-    mode: 'kama',
-    level: 3,
-    text: 'Escolham uma posição do catálogo (ex: O Abraço do Sol ou Amazona) e pratiquem por 2 minutos ininterruptos mantendo contato visual.',
-    timeSeconds: 120,
-    points: 100,
-    refusalOption: 'Beber 2 shots e ceder a vez de escolher o próximo desafio'
-  },
-  {
-    id: 'kama-2',
-    type: 'garrafa',
-    mode: 'kama',
-    level: 3,
-    text: 'A pessoa do gargalo deve tirar a roupa íntima da pessoa da base usando apenas uma das mãos ou a boca.',
-    points: 80,
-    refusalOption: 'Pagar prenda sorteada pelo grupo'
-  },
-  {
-    id: 'kama-3',
+    id: 'kama-v-1',
     type: 'verdade',
     mode: 'kama',
-    level: 3,
+    level: 2,
+    text: 'Qual foi a transa mais selvagem da sua vida e o que você faria de novo hoje?',
+    points: 70,
+    refusalOption: 'Beber 1 shot generoso'
+  },
+  {
+    id: 'kama-v-2',
+    type: 'verdade',
+    mode: 'kama',
+    level: 2,
     text: 'Se você pudesse chamar qualquer pessoa aqui da roda para um ménage ou swing hoje, quem seria e como começaria?',
     points: 90,
     refusalOption: 'Beber até o fundo do copo'
   },
   {
-    id: 'kama-4',
+    id: 'kama-d-1',
+    type: 'desafio',
+    mode: 'kama',
+    level: 2,
+    text: 'Dê beijos quentes e mordidinhas suaves na orelha, pescoço e clavícula de Pessoa B por 45 segundos.',
+    timeSeconds: 45,
+    points: 80,
+    refusalOption: 'Beber 2 shots'
+  },
+  {
+    id: 'kama-d-2',
+    type: 'desafio',
+    mode: 'kama',
+    level: 2,
+    text: 'Tire a camisa ou blusa e deixe Pessoa B passar uma pedra de gelo pelo seu peito e abdômen até derreter.',
+    timeSeconds: 40,
+    points: 85,
+    refusalOption: 'Beber 2 shots'
+  },
+
+  // NÍVEL 3 (Kama Hardcore / Explícito)
+  {
+    id: 'kama-v-3',
+    type: 'verdade',
+    mode: 'kama',
+    level: 3,
+    text: 'Qual posição sexual te faz chegar ao orgasmo mais rápido e qual te faz aguentar mais tempo?',
+    points: 95,
+    refusalOption: 'Tomar 2 shots'
+  },
+  {
+    id: 'kama-v-4',
+    type: 'verdade',
+    mode: 'kama',
+    level: 3,
+    text: 'Você prefere dominar ou ser dominado(a) na cama? Descreva exatamente como gosta de ser tratado(a).',
+    points: 95,
+    refusalOption: 'Beber 2 shots'
+  },
+  {
+    id: 'kama-d-3',
     type: 'desafio',
     mode: 'kama',
     level: 3,
-    text: 'Faça sexo oral por 1 minuto na Pessoa B com ela com os olhos vendados.',
-    timeSeconds: 60,
+    text: 'Escolham uma posição do catálogo (ex: O Abraço do Sol ou Amazona) e pratiquem por 2 minutos ininterruptos mantendo contato visual.',
+    timeSeconds: 120,
     points: 110,
+    refusalOption: 'Beber 2 shots e ceder a vez de escolher o próximo desafio'
+  },
+  {
+    id: 'kama-d-4',
+    type: 'desafio',
+    mode: 'kama',
+    level: 3,
+    text: 'Faça carícias íntimas orais ou manuais por 1 minuto em Pessoa B com ela com os olhos vendados.',
+    timeSeconds: 60,
+    points: 120,
     refusalOption: 'Tomar 3 goles e ficar sem falar por 1 rodada'
   },
   {
-    id: 'kama-5',
+    id: 'kama-en-1',
     type: 'eu_nunca',
     mode: 'kama',
     level: 3,
@@ -901,11 +1045,29 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     refusalOption: 'Quem já fez bebe e conta onde foi!'
   },
   {
-    id: 'kama-6',
+    id: 'kama-en-2',
+    type: 'eu_nunca',
+    mode: 'kama',
+    level: 3,
+    text: 'Eu nunca usei brinquedos eróticos ou fantasias ousadas em uma transa.',
+    points: 50,
+    refusalOption: 'Quem já usou, bebe 1 gole e dá um detalhe!'
+  },
+  {
+    id: 'kama-g-1',
     type: 'garrafa',
     mode: 'kama',
     level: 3,
-    text: 'A pessoa do fundo da garrafa deve escolher uma posição de ménage ou dupla penetração do catálogo para o grupo simular agora!',
+    text: 'A pessoa do gargalo deve tirar a roupa íntima da pessoa da base usando apenas uma das mãos ou a boca.',
+    points: 100,
+    refusalOption: 'Pagar prenda sorteada pelo grupo'
+  },
+  {
+    id: 'kama-g-2',
+    type: 'garrafa',
+    mode: 'kama',
+    level: 3,
+    text: 'A pessoa do fundo da garrafa deve escolher uma posição de ménage ou sexo oral do catálogo para o grupo simular agora!',
     points: 120,
     refusalOption: 'Beber shot duplo'
   }

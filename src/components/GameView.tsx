@@ -83,6 +83,8 @@ export const GameView: React.FC<GameViewProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [activeAuthor, setActiveAuthor] = useState<Participant | null>(null);
   const [activeTarget, setActiveTarget] = useState<Participant | null>(null);
+  const [selectedSubGame, setSelectedSubGame] = useState<'verdade_desafio' | 'garrafa' | 'eu_nunca'>('verdade_desafio');
+  const [roundNumber, setRoundNumber] = useState(1);
   const [bottleAngle, setBottleAngle] = useState(0);
   const [isSpinningBottle, setIsSpinningBottle] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<number | 'todos'>('todos');
@@ -94,11 +96,26 @@ export const GameView: React.FC<GameViewProps> = ({
     challenge: Challenge;
   } | null>(null);
 
-  // Filtra desafios pelo modo da partida, nível selecionado e tipo (Verdade ou Desafio se escolhido)
+  // Calcula o nível incremental automático baseado na rodada atual
+  // Rodadas 1-3: Nível 1 (Aquecimento)
+  // Rodadas 4-7: Nível 2 (Esquenta)
+  // Rodadas 8+: Nível 3 (Kama Picante)
+  const autoLevel = roundNumber <= 3 ? 1 : roundNumber <= 7 ? 2 : 3;
+  const effectiveLevel = selectedLevel === 'todos' ? autoLevel : selectedLevel;
+
+  // Filtra desafios pelo modo da partida, tipo de sub-jogo e nível incremental
   const availableChallenges = challenges.filter((c) => {
     if (c.mode !== gameMode) return false;
-    if (selectedLevel !== 'todos' && c.level !== selectedLevel) return false;
+    if (selectedSubGame === 'eu_nunca') {
+      return c.type === 'eu_nunca';
+    }
+    if (selectedSubGame === 'garrafa') {
+      return c.type === 'garrafa';
+    }
+    // No modo verdade_desafio:
     if (chosenType && c.type !== chosenType) return false;
+    if (c.type !== 'verdade' && c.type !== 'desafio') return false;
+    if (selectedLevel !== 'todos' && c.level !== selectedLevel) return false;
     return true;
   });
   const currentChallenge = availableChallenges[currentIdx % (availableChallenges.length || 1)] || challenges[0];
@@ -212,12 +229,14 @@ export const GameView: React.FC<GameViewProps> = ({
     });
     onAddScore(currentChallenge.points);
     setChosenType(null);
+    setRoundNumber((r) => r + 1);
     setCurrentIdx((prev) => prev + 1);
   };
 
   // Recusa / Beber / Pagar Prenda
   const handleRefusal = () => {
     setChosenType(null);
+    setRoundNumber((r) => r + 1);
     setCurrentIdx((prev) => prev + 1);
   };
 
@@ -234,6 +253,7 @@ export const GameView: React.FC<GameViewProps> = ({
   // Pular desafio sem pontuar
   const handleSkip = () => {
     setChosenType(null);
+    setRoundNumber((r) => r + 1);
     setCurrentIdx((prev) => prev + 1);
   };
 
@@ -314,14 +334,53 @@ export const GameView: React.FC<GameViewProps> = ({
 
   return (
     <div className="space-y-4 pb-20">
+      {/* Seletor Rápido de Jogos */}
+      <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#1A0206] border border-[#D4AF37]/40 rounded-2xl">
+        <button
+          onClick={() => { setSelectedSubGame('verdade_desafio'); setChosenType(null); }}
+          className={`py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
+            selectedSubGame === 'verdade_desafio'
+              ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
+              : 'text-[#F6EAD2]/70 hover:text-white'
+          }`}
+        >
+          <span className="text-sm">🎭</span>
+          <span className="text-[10px] font-cinzel tracking-tight">Verdade / Desafio</span>
+        </button>
+
+        <button
+          onClick={() => { setSelectedSubGame('garrafa'); }}
+          className={`py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
+            selectedSubGame === 'garrafa'
+              ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
+              : 'text-[#F6EAD2]/70 hover:text-white'
+          }`}
+        >
+          <span className="text-sm">🍾</span>
+          <span className="text-[10px] font-cinzel tracking-tight">Jogo da Garrafa</span>
+        </button>
+
+        <button
+          onClick={() => { setSelectedSubGame('eu_nunca'); }}
+          className={`py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-center ${
+            selectedSubGame === 'eu_nunca'
+              ? 'bg-[#8A0E26] text-[#FFDF78] font-bold shadow-md border border-[#D4AF37]/50'
+              : 'text-[#F6EAD2]/70 hover:text-white'
+          }`}
+        >
+          <span className="text-sm">🤫</span>
+          <span className="text-[10px] font-cinzel tracking-tight">Eu Nunca</span>
+        </button>
+      </div>
+
       {/* Botão de Ação Rápida: Nova Rodada / Limpar Jogadores */}
       <div className="flex justify-between items-center px-1">
         <span className="text-[11px] text-[#D4AF37]/80 font-cinzel">
-          PARTIDA EM ANDAMENTO
+          RODADA #{roundNumber} • NÍVEL INCREMENTAL: N{autoLevel}
         </span>
         {onResetGame && (
           <button
-            onClick={onResetGame}
+            onClick={() => { setRoundNumber(1); onResetGame(); }}
             className="flex items-center gap-1 text-[11px] bg-[#2A050B]/90 hover:bg-[#3D0811] text-[#FFDF78] border border-[#D4AF37]/40 px-2.5 py-1 rounded-lg transition"
             title="Resetar jogadores e iniciar nova partida"
           >
