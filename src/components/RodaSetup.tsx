@@ -2,6 +2,31 @@ import React, { useState } from 'react';
 import { Participant, GameMode, GenderIdentity, SexualOrientation, IntimateRole } from '../types';
 import { UserPlus, Trash2, HeartHandshake, ShieldCheck, Sparkles, AlertCircle, RotateCcw, Play } from 'lucide-react';
 
+// Mapeamento de rótulos elegantes para exibição dos badges
+const GENDER_LABELS: Record<string, string> = {
+  homem_cis: 'Homem Cis',
+  mulher_cis: 'Mulher Cis',
+  homem_trans: 'Homem Trans',
+  mulher_trans: 'Mulher Trans',
+  nao_binario: 'Não-binário',
+  outro: 'Outro'
+};
+
+const ORIENTATION_LABELS: Record<string, string> = {
+  hetero: 'Hétero',
+  gay: 'Gay',
+  lesbica: 'Lésbica',
+  bi_pan: 'Bi / Pan',
+  flexivel: 'Flexível / Sem Rótulo',
+  lgbtqia: 'LGBTQIA+'
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  ativo: 'Ativo(a)',
+  passivo: 'Passivo(a)',
+  versatil: 'Versátil'
+};
+
 interface RodaSetupProps {
   participants: Participant[];
   gameMode: GameMode;
@@ -166,18 +191,18 @@ export const RodaSetup: React.FC<RodaSetupProps> = ({
                     {idx + 1}. {p.name}
                   </span>
                   <div className="flex flex-wrap gap-1.5 mt-1 text-[10px]">
-                    <span className="bg-[#EEDBB7] px-1.5 py-0.5 rounded text-[#421913] font-medium">
-                      {p.gender.replace('_', ' ')}
+                    <span className="bg-[#EEDBB7] px-2 py-0.5 rounded-full text-[#421913] font-semibold border border-[#D4AF37]/30">
+                      {GENDER_LABELS[p.gender] || p.gender.replace('_', ' ')}
                     </span>
-                    <span className="bg-[#EEDBB7] px-1.5 py-0.5 rounded text-[#421913] font-medium">
-                      {p.orientation}
+                    <span className="bg-[#EEDBB7] px-2 py-0.5 rounded-full text-[#421913] font-semibold border border-[#D4AF37]/30">
+                      {ORIENTATION_LABELS[p.orientation] || p.orientation}
                     </span>
                     {gameMode !== 'amigos' && (
-                      <span className="bg-[#8A0E26] text-white px-1.5 py-0.5 rounded font-medium">
-                        Papel: {p.role}
+                      <span className="bg-[#8A0E26] text-white px-2 py-0.5 rounded-full font-semibold">
+                        Papel: {ROLE_LABELS[p.role] || p.role}
                       </span>
                     )}
-                    <span className={`px-1.5 py-0.5 rounded font-medium ${p.interactsWithAll ? 'bg-emerald-700 text-white' : 'bg-amber-800 text-white'}`}>
+                    <span className={`px-2 py-0.5 rounded-full font-semibold ${p.interactsWithAll ? 'bg-emerald-700 text-white' : 'bg-amber-800 text-white'}`}>
                       {p.interactsWithAll ? 'Interage c/ todos' : 'Orientação estrita'}
                     </span>
                   </div>

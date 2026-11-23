@@ -3,19 +3,20 @@ import { Challenge, Participant, GameMode } from '../types';
 import { Play, Pause, RotateCcw, Beer, Award, CheckCircle, RefreshCw, Flame, Wine, UserPlus, Trash2, SkipForward } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-// Helper: retorna pronomes corretos com base no gênero do participante
+// Helper: retorna pronomes e artigos com base no gênero do participante
 function getPronouns(p: Participant | null) {
-  if (!p) return { possessivo: 'do seu par', reto: 'você', obliquo: 'o(a)' };
+  if (!p) return { possessivo: 'do seu par', reto: 'você', obliquo: 'o(a)', artigo: 'o(a)' };
   const isMale = p.gender === 'homem_cis' || p.gender === 'homem_trans';
   const isFemale = p.gender === 'mulher_cis' || p.gender === 'mulher_trans';
   return {
     possessivo: isMale ? 'dele' : isFemale ? 'dela' : 'do seu par',
     reto: isMale ? 'ele' : isFemale ? 'ela' : 'elu',
     obliquo: isMale ? 'o' : isFemale ? 'a' : 'elu',
+    artigo: isMale ? 'o' : isFemale ? 'a' : 'e',
   };
 }
 
-// Injeta nomes e pronomes adaptativos com concordância no texto do desafio
+// Injeta nomes e pronomes adaptativos com concordância rigorosa no texto do desafio
 function injectNames(
   text: string,
   author: Participant | null,
@@ -27,13 +28,18 @@ function injectNames(
   const ap = getPronouns(author);
 
   return text
-    // Substituição de marcadores de nomes
+    // Substituição direta de placeholders de nomes
     .replace(/Pessoa A/g, authorName)
     .replace(/Pessoa B/g, targetName)
-    // Contrações de preposição com pronome para o ALVO (quem recebe a ação)
+    // Locuções prepositivas com pronome possessivo/oblíquo ligadas ao alvo
     .replace(/\bno corpo dela\b/gi, `no corpo ${tp.possessivo}`)
+    .replace(/\bno corpo dele\b/gi, `no corpo ${tp.possessivo}`)
     .replace(/\bno ouvido dela\b/gi, `no ouvido ${tp.possessivo}`)
+    .replace(/\bno ouvido dele\b/gi, `no ouvido ${tp.possessivo}`)
     .replace(/\bna frente dela\b/gi, `na frente ${tp.possessivo}`)
+    .replace(/\bna frente dele\b/gi, `na frente ${tp.possessivo}`)
+    .replace(/\bcom ela com os olhos vendados\b/gi, `com ${targetName} com os olhos vendados`)
+    .replace(/\bcom ele com os olhos vendados\b/gi, `com ${targetName} com os olhos vendados`)
     .replace(/\bcom ela\b/gi, `com ${targetName}`)
     .replace(/\bcom ele\b/gi, `com ${targetName}`)
     .replace(/\bpara ela\b/gi, `para ${targetName}`)
@@ -42,7 +48,6 @@ function injectNames(
     .replace(/\ba ele\b/gi, `a ${targetName}`)
     .replace(/\bsobre ela\b/gi, `sobre ${targetName}`)
     .replace(/\bsobre ele\b/gi, `sobre ${targetName}`)
-    .replace(/\bcom ela com os olhos vendados\b/gi, `com ${targetName} com os olhos vendados`)
     .replace(/\bdela\b/gi, tp.possessivo)
     .replace(/\bdele\b/gi, tp.possessivo)
     .replace(/\bdo seu par\b/gi, tp.possessivo)
@@ -287,14 +292,14 @@ export const GameView: React.FC<GameViewProps> = ({
         </div>
 
         {/* Ilustração ou Ícone da Carta */}
-        <div className="w-24 h-24 mx-auto my-2 rounded-full border-2 border-[#D4AF37]/50 overflow-hidden shadow-inner bg-[#1A0206] flex items-center justify-center">
+        <div className="w-24 h-24 mx-auto my-2 rounded-full border-2 border-[#D4AF37]/70 overflow-hidden shadow-lg bg-[#180206] flex items-center justify-center relative">
           {gameMode === 'amigos' ? (
             <div className="text-3xl">🥂</div>
           ) : (
             <img
-              src="/assets/pos-abraco-sol.jpg"
-              alt="Ilustração"
-              className="w-full h-full object-cover opacity-90 hover:scale-105 transition"
+              src="/assets/card-silhouette-gold.webp"
+              alt="Silhueta Íntima"
+              className="w-full h-full object-cover transition duration-300 hover:scale-105"
             />
           )}
         </div>
